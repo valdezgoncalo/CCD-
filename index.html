@@ -1,46 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
-  <title>Validação de Sócio</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+  <meta charset="UTF-8">
+  <title>Validação CCD</title>
 </head>
-<body>
+<body style="font-family: Arial; text-align:center; margin-top:50px;">
 
 <h1 id="status">A validar...</h1>
-<p id="nome"></p>
+<h2 id="nome"></h2>
 <p id="numero"></p>
 
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const id = urlParams.get('id');
-
-  // Firebase config (vais meter a tua)
-  const firebaseConfig = {
-    apiKey: "XXX",
-    authDomain: "XXX",
-    projectId: "XXX"
-  };
-
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  db.collection("socios").doc(id).get().then(doc => {
-    if (doc.exists) {
-      const data = doc.data();
-
-      document.getElementById("nome").innerText = data.nome;
-      document.getElementById("numero").innerText = "Nº " + data.numero;
-
-      if (data.estado === "ativo") {
-        document.getElementById("status").innerText = "✅ Sócio Ativo";
-      } else {
-        document.getElementById("status").innerText = "❌ Sócio Inativo";
-      }
-    } else {
-      document.getElementById("status").innerText = "Sócio não encontrado";
+  const socios = [
+    {
+      id: "abc123",
+      nome: "Gonçalo Valdez",
+      numero: "1",
+      estado: "ativo"
+    },
+    {
+      id: "xyz456",
+      nome: "João Silva",
+      numero: "2",
+      estado: "inativo"
     }
-  });
+    {
+  id: "novo789",
+  nome: "Maria Costa",
+  numero: "3",
+  estado: "ativo"
+}
+  {
+  id: "novo789",
+  nome: "cÁTIA",
+  numero: "3",
+  estado: "ativo"
+}
+  ];
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  const socio = socios.find(s => s.id === id);
+
+  if (!socio) {
+    document.getElementById("status").innerText = "❌ Sócio não encontrado";
+  } else {
+    document.getElementById("nome").innerText = socio.nome;
+    document.getElementById("numero").innerText = "Nº " + socio.numero;
+
+    if (socio.estado === "ativo") {
+      document.getElementById("status").innerText = "✅ Sócio Ativo";
+      document.body.style.backgroundColor = "#d4edda";
+    } else {
+      document.getElementById("status").innerText = "❌ Sócio Inativo";
+      document.body.style.backgroundColor = "#f8d7da";
+    }
+  }
 </script>
 
 </body>
