@@ -1,8 +1,18 @@
-{
-  "id": "12345",
-  "nome": "Gpnçalo Valdez",
-  "estado": "ativo",
-  "validade": "2026-12-31",
-  "foto": "url_opcional",
-  "numero": "12345"
-}
+[
+  {
+    "id": "12345",
+    "nome": "Gonçalo Valdez",
+    "estado": "ativo",
+    "validade": "2026-12-31",
+    "foto": "",
+    "numero": "12345"
+  },
+  {
+    "id": "20001",
+    "nome": "Marta Silveira",
+    "estado": "inativo",
+    "validade": "2025-12-31",
+    "foto": "",
+    "numero": "20001"
+  }
+]
