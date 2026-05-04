@@ -3,515 +3,345 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCD • Gestão de Sócios e Cartão Digital</title>
+  <title>CCD • Gestão de Sócios e Cartão Personalizado</title>
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <style>
-    :root {
-      --bg: #eef3fb;
-      --panel: #ffffff;
-      --border: #dbe5f2;
-      --primary: #1d4ed8;
-      --primary-soft: #e8efff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --ok-bg: #dcfce7;
-      --ok-tx: #166534;
-      --bad-bg: #fee2e2;
-      --bad-tx: #991b1b;
-      --warn-bg: #fef3c7;
-      --warn-tx: #92400e;
-      --neutral-bg: #e5e7eb;
-      --neutral-tx: #374151;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      padding: 20px;
-      font-family: Inter, "Segoe UI", Roboto, sans-serif;
-      color: var(--text);
-      background: linear-gradient(180deg, #f5f8ff 0%, var(--bg) 100%);
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      gap: 16px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-      gap: 16px;
-      align-items: start;
-    }
-
-    h1, h2, h3 {
-      margin: 0 0 8px;
-    }
-
-    p {
-      margin: 0 0 10px;
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 12px;
-    }
-
-    .field {
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    input,
-    select {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 14px;
-      background: #fff;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    .btn-secondary {
-      background: var(--primary-soft);
-      color: #1e3a8a;
-    }
-
-    .btn-danger {
-      background: var(--bad-bg);
-      color: var(--bad-tx);
-    }
-
-    .card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background: #f8fbff;
-    }
-
-    .status {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .status-ativo { background: var(--ok-bg); color: var(--ok-tx); }
-    .status-inativo { background: var(--bad-bg); color: var(--bad-tx); }
-    .status-expirado { background: var(--warn-bg); color: var(--warn-tx); }
-    .status-neutro { background: var(--neutral-bg); color: var(--neutral-tx); }
-
-    .msg {
-      margin-top: 8px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .msg-ok { color: var(--ok-tx); }
-    .msg-error { color: var(--bad-tx); }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th,
-    td {
-      text-align: left;
-      border-bottom: 1px solid #edf2fb;
-      padding: 8px;
-      vertical-align: top;
-    }
-
-    .table-wrap {
-      max-height: 280px;
-      overflow: auto;
-      margin-top: 10px;
-    }
+    :root { --bg:#eef3fb; --panel:#fff; --border:#dbe5f2; --primary:#1d4ed8; --muted:#6b7280; --text:#1f2937; }
+    *{box-sizing:border-box} body{margin:0;padding:20px;background:linear-gradient(180deg,#f5f8ff,var(--bg));font-family:Inter,Segoe UI,Roboto,sans-serif;color:var(--text)}
+    .container{max-width:1200px;margin:0 auto;display:grid;gap:16px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 8px 22px rgba(0,0,0,.06)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}.field{margin-bottom:10px}label{display:block;font-weight:600;margin-bottom:4px}
+    input,select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px}.row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:#1d4ed8;color:#fff}.secondary{background:#e8efff;color:#1e3a8a}.danger{background:#fee2e2;color:#991b1b}
+    .card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#f8fbff}.msg{font-size:13px;font-weight:700}.ok{color:#166534}.err{color:#991b1b}
+    .status{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}.ativo{background:#dcfce7;color:#166534}.inativo{background:#fee2e2;color:#991b1b}.expirado{background:#fef3c7;color:#92400e}.na{background:#e5e7eb;color:#374151}
+    .table-wrap{max-height:260px;overflow:auto} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #edf2fb;text-align:left}
+    .foto-preview{width:96px;height:96px;border-radius:12px;object-fit:cover;border:1px solid var(--border);background:#fff}
+    .cartao-top{display:flex;gap:12px;align-items:center}
+    .custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   </style>
 </head>
 <body>
   <main class="container">
     <section class="panel">
-      <h1>CCD • Gestão de Sócios + Cartão Digital QR</h1>
-      <p>Painel completo para registar/editar sócios, gerar cartão e validar descontos no parceiro.</p>
-      <p class="small">Validação por link: <code>?id=12345</code></p>
+      <h1>CCD • Cartão de Sócio com QR + Foto</h1>
+      <p style="color:var(--muted)">Agora com botão de guardar funcional e personalização com imagem/foto no cartão.</p>
     </section>
 
     <section class="panel grid">
       <article>
-        <h2>1) Registo / Edição de Sócios</h2>
+        <h2>1) Registar / Editar Sócio</h2>
 
-        <div class="field"><label for="fId">ID do Sócio</label><input id="fId" /></div>
-        <div class="field"><label for="fNumero">Número</label><input id="fNumero" /></div>
-        <div class="field"><label for="fNome">Nome</label><input id="fNome" /></div>
-        <div class="field">
-          <label for="fEstado">Estado</label>
-          <select id="fEstado">
-            <option value="ativo">ativo</option>
-            <option value="inativo">inativo</option>
-          </select>
-        </div>
-        <div class="field"><label for="fValidade">Validade</label><input id="fValidade" type="date" /></div>
+        <form id="formSocio">
+          <div class="field"><label for="fId">ID do Sócio</label><input id="fId" required /></div>
+          <div class="field"><label for="fNumero">Número</label><input id="fNumero" required /></div>
+          <div class="field"><label for="fNome">Nome</label><input id="fNome" required /></div>
+          <div class="field"><label for="fEstado">Estado</label><select id="fEstado"><option value="ativo">ativo</option><option value="inativo">inativo</option></select></div>
+          <div class="field"><label for="fValidade">Validade</label><input id="fValidade" type="date" /></div>
+          <div class="field"><label for="fFoto">Foto do sócio / imagem do cartão</label><input id="fFoto" type="file" accept="image/*" /></div>
 
-        <div class="row">
-          <button class="btn btn-primary" id="btnGuardar" type="button">Guardar / Atualizar</button>
-          <button class="btn btn-secondary" id="btnLimpar" type="button">Limpar</button>
-          <button class="btn btn-secondary" id="btnExportarBase" type="button">Exportar JSON</button>
-        </div>
+          <div class="row">
+            <button class="btn primary" id="btnGuardar" type="submit">Guardar / Atualizar</button>
+            <button class="btn secondary" id="btnLimpar" type="button">Limpar</button>
+            <button class="btn secondary" id="btnExportarBase" type="button">Exportar JSON</button>
+          </div>
+        </form>
 
         <p id="msgCrud" class="msg"></p>
 
         <div class="card table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Estado</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Nome</th><th>Estado</th><th>Ações</th></tr></thead>
             <tbody id="tbSocios"></tbody>
           </table>
         </div>
       </article>
 
       <article>
-        <h2>2) Emissão / Validação do Cartão</h2>
-
-        <div class="field"><label for="emitId">ID ou Número para emissão</label><input id="emitId" placeholder="Ex.: 12345" /></div>
-
+        <h2>2) Emitir / Validar Cartão</h2>
+        <div class="field"><label for="emitId">ID ou Número</label><input id="emitId" placeholder="12345" /></div>
         <div class="row">
-          <button class="btn btn-primary" id="btnEmitir" type="button">Gerar QR</button>
-          <button class="btn btn-secondary" id="btnCopiar" type="button">Copiar Link</button>
-          <button class="btn btn-secondary" id="btnPng" type="button">Exportar PNG</button>
-          <button class="btn btn-secondary" id="btnPdf" type="button">Exportar PDF</button>
+          <button class="btn primary" id="btnEmitir" type="button">Gerar QR</button>
+          <button class="btn secondary" id="btnCopiar" type="button">Copiar Link</button>
+          <button class="btn secondary" id="btnPng" type="button">Exportar PNG</button>
+          <button class="btn secondary" id="btnPdf" type="button">Exportar PDF</button>
         </div>
-
         <p id="msgEmit" class="msg"></p>
 
-        <div class="card" id="cartaoExportavel">
-          <h3 id="ttl">Aguardando validação...</h3>
-          <span id="badge" class="status status-neutro">SEM DADOS</span>
+        <div class="card" style="margin-bottom:10px">
+          <h3>Personalização do Cartão</h3>
+          <div class="custom-grid">
+            <div class="field"><label for="cTitulo">Título</label><input id="cTitulo" placeholder="Cartão de Sócio CCD" /></div>
+            <div class="field"><label for="cSubtitulo">Subtítulo</label><input id="cSubtitulo" placeholder="Válido para descontos" /></div>
+            <div class="field"><label for="cCorFundo">Cor de Fundo</label><input id="cCorFundo" type="color" value="#f8fbff" /></div>
+            <div class="field"><label for="cCorTexto">Cor de Texto</label><input id="cCorTexto" type="color" value="#1f2937" /></div>
+          </div>
+          <div class="field"><label for="cLogo">Logo do CCD (opcional)</label><input id="cLogo" type="file" accept="image/*" /></div>
+          <button class="btn secondary" id="btnAplicarEstilo" type="button">Aplicar Personalização</button>
+        </div>
 
+        <div class="card" id="cartaoExportavel">
+          <p id="cardTitulo" style="font-weight:800;margin:0 0 4px">Cartão de Sócio CCD</p>
+          <p id="cardSubtitulo" style="margin:0 0 8px;color:#6b7280">Válido para descontos</p>
+          <div class="cartao-top">
+            <img id="cardLogo" class="foto-preview" alt="Logo do CCD" src="" />
+            <img id="cardFoto" class="foto-preview" alt="Foto do sócio" src="" />
+            <div>
+              <h3 id="ttl">Aguardando validação...</h3>
+              <span id="badge" class="status na">SEM DADOS</span>
+            </div>
+          </div>
           <p><strong>Nome:</strong> <span id="vNome">—</span></p>
           <p><strong>Número:</strong> <span id="vNumero">—</span></p>
           <p><strong>Estado:</strong> <span id="vEstado">—</span></p>
           <p><strong>Validade:</strong> <span id="vValidade">—</span></p>
-
-          <canvas id="qr" style="margin-top: 8px;"></canvas>
-          <p class="small"><a id="lnk" href="#">—</a></p>
+          <canvas id="qr"></canvas>
+          <p><a id="lnk" href="#">—</a></p>
         </div>
       </article>
     </section>
   </main>
 
   <script>
-    const getEl = (id) => document.getElementById(id);
+    const el = (id) => document.getElementById(id);
     const STORAGE_KEY = 'ccd_socios';
     let socios = [];
+    let fotoBase64Atual = '';
+    let logoBase64 = '';
 
-    function safeText(value) {
-      return String(value ?? '').trim();
+    function setMsg(id, text, ok) { const m = el(id); m.className = `msg ${ok ? 'ok' : 'err'}`; m.textContent = text; }
+    function formatarData(iso) { return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('pt-PT') : '—'; }
+    function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(socios)); }
+
+    function limparForm() {
+      el('formSocio').reset();
+      el('fEstado').value = 'ativo';
+      fotoBase64Atual = '';
+      setMsg('msgCrud', 'Formulário limpo.', true);
     }
 
-    function showMessage(targetId, text, type) {
-      const target = getEl(targetId);
-      target.className = `msg ${type === 'ok' ? 'msg-ok' : 'msg-error'}`;
-      target.textContent = text;
-    }
-
-    function formatDate(isoDate) {
-      if (!isoDate) return '—';
-      return new Date(`${isoDate}T00:00:00`).toLocaleDateString('pt-PT');
-    }
-
-    function persistSocios() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(socios));
-    }
-
-    function findSocio(key) {
-      return socios.find((s) => String(s.id) === String(key) || String(s.numero) === String(key)) || null;
-    }
-
-    function getStatusInfo(socio) {
-      if (!socio) {
-        return { title: 'Sócio não encontrado', badgeText: 'NÃO ENCONTRADO', badgeClass: 'status status-neutro' };
-      }
-
-      const expired = socio.validade && new Date(`${socio.validade}T23:59:59`) < new Date();
-      if (socio.estado !== 'ativo') {
-        return { title: 'Sócio inativo', badgeText: 'INATIVO', badgeClass: 'status status-inativo' };
-      }
-      if (expired) {
-        return { title: 'Validade expirada', badgeText: 'EXPIRADO', badgeClass: 'status status-expirado' };
-      }
-
-      return { title: '✅ Sócio ativo', badgeText: 'ATIVO', badgeClass: 'status status-ativo' };
-    }
-
-    function buildValidationLink(id) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('id', id);
-      return url.toString();
-    }
-
-    function clearForm() {
-      getEl('fId').value = '';
-      getEl('fNumero').value = '';
-      getEl('fNome').value = '';
-      getEl('fEstado').value = 'ativo';
-      getEl('fValidade').value = '';
-    }
-
-    function loadFormFromSocio(socio) {
-      getEl('fId').value = socio.id;
-      getEl('fNumero').value = socio.numero;
-      getEl('fNome').value = socio.nome;
-      getEl('fEstado').value = socio.estado;
-      getEl('fValidade').value = socio.validade || '';
-    }
-
-    function removeSocio(id) {
-      socios = socios.filter((s) => String(s.id) !== String(id));
-      persistSocios();
-      renderTable();
-      showMessage('msgCrud', 'Sócio removido com sucesso.', 'ok');
-    }
-
-    function renderTable() {
-      const tbody = getEl('tbSocios');
-      tbody.innerHTML = '';
-
-      socios.forEach((socio) => {
-        const tr = document.createElement('tr');
-
-        const tdId = document.createElement('td');
-        tdId.textContent = socio.id;
-
-        const tdNome = document.createElement('td');
-        tdNome.textContent = socio.nome;
-
-        const tdEstado = document.createElement('td');
-        tdEstado.textContent = socio.estado;
-
-        const tdActions = document.createElement('td');
-        const btnEdit = document.createElement('button');
-        btnEdit.type = 'button';
-        btnEdit.className = 'btn btn-secondary';
-        btnEdit.textContent = 'Editar';
-        btnEdit.addEventListener('click', () => {
-          loadFormFromSocio(socio);
-          showMessage('msgCrud', `Editar sócio ${socio.id}.`, 'ok');
-        });
-
-        const btnDelete = document.createElement('button');
-        btnDelete.type = 'button';
-        btnDelete.className = 'btn btn-danger';
-        btnDelete.textContent = 'Apagar';
-        btnDelete.style.marginLeft = '6px';
-        btnDelete.addEventListener('click', () => removeSocio(socio.id));
-
-        tdActions.append(btnEdit, btnDelete);
-
-        tr.append(tdId, tdNome, tdEstado, tdActions);
-        tbody.appendChild(tr);
+    function lerImagemComoBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
     }
 
-    function saveSocio() {
-      const id = safeText(getEl('fId').value);
-      const numero = safeText(getEl('fNumero').value);
-      const nome = safeText(getEl('fNome').value);
-      const estado = safeText(getEl('fEstado').value) || 'ativo';
-      const validade = safeText(getEl('fValidade').value);
-
-      if (!id || !numero || !nome) {
-        showMessage('msgCrud', 'Preencha ID, Número e Nome.', 'error');
-        return;
-      }
-
-      const record = { id, numero, nome, estado, validade, foto: '' };
-      const existingIndex = socios.findIndex((s) => String(s.id) === String(id));
-
-      if (existingIndex >= 0) {
-        socios[existingIndex] = record;
-      } else {
-        socios.push(record);
-      }
-
-      persistSocios();
-      renderTable();
-      showMessage('msgCrud', 'Registo guardado com sucesso.', 'ok');
+    function statusInfo(s) {
+      if (!s) return { t: 'NÃO ENCONTRADO', c: 'na', ttl: 'Sócio não encontrado' };
+      const exp = s.validade && new Date(`${s.validade}T23:59:59`) < new Date();
+      if (s.estado !== 'ativo') return { t: 'INATIVO', c: 'inativo', ttl: 'Sócio inativo' };
+      if (exp) return { t: 'EXPIRADO', c: 'expirado', ttl: 'Validade expirada' };
+      return { t: 'ATIVO', c: 'ativo', ttl: '✅ Sócio ativo' };
     }
 
-    function updateValidationCard(socio) {
-      const status = getStatusInfo(socio);
+    function renderTabela() {
+      const tb = el('tbSocios');
+      tb.innerHTML = '';
+      socios.forEach((s) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.id}</td><td>${s.nome}</td><td>${s.estado}</td><td></td>`;
+        const tdActions = tr.lastElementChild;
 
-      getEl('ttl').textContent = status.title;
-      getEl('badge').className = status.badgeClass;
-      getEl('badge').textContent = status.badgeText;
+        const btnEd = document.createElement('button');
+        btnEd.type = 'button';
+        btnEd.className = 'btn secondary';
+        btnEd.textContent = 'Editar';
+        btnEd.onclick = () => {
+          el('fId').value = s.id;
+          el('fNumero').value = s.numero;
+          el('fNome').value = s.nome;
+          el('fEstado').value = s.estado;
+          el('fValidade').value = s.validade || '';
+          fotoBase64Atual = s.foto || '';
+          setMsg('msgCrud', `A editar sócio ${s.id}.`, true);
+        };
 
-      getEl('vNome').textContent = socio?.nome || '—';
-      getEl('vNumero').textContent = socio?.numero || '—';
-      getEl('vEstado').textContent = socio?.estado || '—';
-      getEl('vValidade').textContent = formatDate(socio?.validade);
+        const btnRm = document.createElement('button');
+        btnRm.type = 'button';
+        btnRm.className = 'btn danger';
+        btnRm.textContent = 'Apagar';
+        btnRm.style.marginLeft = '6px';
+        btnRm.onclick = () => {
+          socios = socios.filter((x) => String(x.id) !== String(s.id));
+          persist();
+          renderTabela();
+          setMsg('msgCrud', 'Sócio removido.', true);
+        };
+
+        tdActions.append(btnEd, btnRm);
+        tb.appendChild(tr);
+      });
     }
 
-    async function issueCard(key) {
-      if (!key) {
-        showMessage('msgEmit', 'Indique um ID ou Número.', 'error');
-        return;
+    function procurar(chave) {
+      return socios.find((s) => String(s.id) === String(chave) || String(s.numero) === String(chave)) || null;
+    }
+
+    function atualizarCartao(s) {
+      const st = statusInfo(s);
+      el('ttl').textContent = st.ttl;
+      el('badge').className = `status ${st.c}`;
+      el('badge').textContent = st.t;
+      el('vNome').textContent = s?.nome || '—';
+      el('vNumero').textContent = s?.numero || '—';
+      el('vEstado').textContent = s?.estado || '—';
+      el('vValidade').textContent = formatarData(s?.validade);
+      el('cardFoto').src = s?.foto || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNDgiIHk9IjUyIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmI3MjgwIj5TRU0gRk9UTzwvdGV4dD48L3N2Zz4=';
+      if (!el('cardLogo').src) {
+        el('cardLogo').src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjZWRmMmZiIi8+PHRleHQgeD0iNDgiIHk9IjUyIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmI3MjgwIj5MT0dPPC90ZXh0Pjwvc3ZnPg==';
+      }
+    }
+
+    async function aplicarPersonalizacao() {
+      const titulo = el('cTitulo').value.trim() || 'Cartão de Sócio CCD';
+      const subtitulo = el('cSubtitulo').value.trim() || 'Válido para descontos';
+      const corFundo = el('cCorFundo').value || '#f8fbff';
+      const corTexto = el('cCorTexto').value || '#1f2937';
+      const logoFile = el('cLogo').files?.[0];
+
+      if (logoFile) logoBase64 = await lerImagemComoBase64(logoFile);
+
+      el('cardTitulo').textContent = titulo;
+      el('cardSubtitulo').textContent = subtitulo;
+      el('cartaoExportavel').style.background = corFundo;
+      el('cartaoExportavel').style.color = corTexto;
+      if (logoBase64) el('cardLogo').src = logoBase64;
+      localStorage.setItem('ccd_card_custom', JSON.stringify({ titulo, subtitulo, corFundo, corTexto, logoBase64 }));
+      setMsg('msgEmit', 'Personalização aplicada.', true);
+    }
+
+    function linkValidacao(id) {
+      const u = new URL(window.location.href);
+      u.searchParams.set('id', id);
+      return u.toString();
+    }
+
+    async function emitir(idNumero) {
+      if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
+      const s = procurar(idNumero);
+      if (!s) { atualizarCartao(null); return setMsg('msgEmit', 'Sócio não encontrado.', false); }
+      const link = linkValidacao(idNumero);
+      await QRCode.toCanvas(el('qr'), link, { width: 180, margin: 1 });
+      el('lnk').href = link;
+      el('lnk').textContent = link;
+      atualizarCartao(s);
+      setMsg('msgEmit', 'QR gerado com sucesso.', true);
+    }
+
+    async function guardarSocio(e) {
+      e.preventDefault();
+
+      const id = el('fId').value.trim();
+      const numero = el('fNumero').value.trim();
+      const nome = el('fNome').value.trim();
+      const estado = el('fEstado').value;
+      const validade = el('fValidade').value;
+      const file = el('fFoto').files?.[0];
+
+      if (!id || !numero || !nome) return setMsg('msgCrud', 'Preencha ID, Número e Nome.', false);
+
+      let foto = fotoBase64Atual || '';
+      if (file) {
+        foto = await lerImagemComoBase64(file);
       }
 
-      const socio = findSocio(key);
-      if (!socio) {
-        updateValidationCard(null);
-        showMessage('msgEmit', 'Sócio não encontrado.', 'error');
-        return;
-      }
+      const novo = { id, numero, nome, estado, validade, foto };
+      const idx = socios.findIndex((s) => String(s.id) === String(id));
+      if (idx >= 0) socios[idx] = novo;
+      else socios.push(novo);
 
-      const link = buildValidationLink(key);
-      await QRCode.toCanvas(getEl('qr'), link, { width: 190, margin: 1 });
-
-      const linkEl = getEl('lnk');
-      linkEl.href = link;
-      linkEl.textContent = link;
-
-      updateValidationCard(socio);
-      showMessage('msgEmit', 'QR gerado com sucesso.', 'ok');
+      fotoBase64Atual = foto;
+      persist();
+      renderTabela();
+      setMsg('msgCrud', 'Sócio guardado com sucesso.', true);
     }
 
-    async function exportCardAsPng() {
-      const canvas = await html2canvas(getEl('cartaoExportavel'), { backgroundColor: '#ffffff' });
-      const anchor = document.createElement('a');
-      anchor.href = canvas.toDataURL('image/png');
-      anchor.download = 'cartao-socio.png';
-      anchor.click();
-      showMessage('msgEmit', 'Cartão exportado em PNG.', 'ok');
+    async function exportarPNG() {
+      const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: '#fff' });
+      const a = document.createElement('a');
+      a.href = c.toDataURL('image/png');
+      a.download = 'cartao-socio.png';
+      a.click();
+      setMsg('msgEmit', 'PNG exportado.', true);
     }
 
-    async function exportCardAsPdf() {
-      const canvas = await html2canvas(getEl('cartaoExportavel'), { backgroundColor: '#ffffff' });
-      const image = canvas.toDataURL('image/png');
-
+    async function exportarPDF() {
+      const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: '#fff' });
+      const img = c.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-
-      const width = 180;
-      const height = (canvas.height * width) / canvas.width;
-
-      pdf.addImage(image, 'PNG', 15, 20, width, height);
+      const w = 180;
+      const h = (c.height * w) / c.width;
+      pdf.addImage(img, 'PNG', 15, 20, w, h);
       pdf.save('cartao-socio.pdf');
-
-      showMessage('msgEmit', 'Cartão exportado em PDF.', 'ok');
+      setMsg('msgEmit', 'PDF exportado.', true);
     }
 
-    function exportSociosJson() {
-      const blob = new Blob([JSON.stringify(socios, null, 2)], { type: 'application/json' });
-      const anchor = document.createElement('a');
-      anchor.href = URL.createObjectURL(blob);
-      anchor.download = 'socios.json';
-      anchor.click();
-      URL.revokeObjectURL(anchor.href);
-      showMessage('msgCrud', 'Base exportada com sucesso.', 'ok');
+    function exportarBase() {
+      const b = new Blob([JSON.stringify(socios, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'socios.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      setMsg('msgCrud', 'Base exportada.', true);
     }
 
-    async function loadInitialData() {
-      const fromStorage = localStorage.getItem(STORAGE_KEY);
-      if (fromStorage) {
-        socios = JSON.parse(fromStorage);
-      } else {
-        const response = await fetch('./socios.json');
-        if (!response.ok) throw new Error('Falha ao carregar socios.json');
-
-        const data = await response.json();
+    async function init() {
+      const local = localStorage.getItem(STORAGE_KEY);
+      if (local) socios = JSON.parse(local);
+      else {
+        const r = await fetch('./socios.json');
+        if (!r.ok) throw new Error('Falha ao carregar socios.json');
+        const data = await r.json();
         socios = Array.isArray(data) ? data : [data];
-        persistSocios();
+        persist();
       }
 
-      renderTable();
+      renderTabela();
+      atualizarCartao(null);
+      const cardCustom = localStorage.getItem('ccd_card_custom');
+      if (cardCustom) {
+        const c = JSON.parse(cardCustom);
+        el('cTitulo').value = c.titulo || '';
+        el('cSubtitulo').value = c.subtitulo || '';
+        el('cCorFundo').value = c.corFundo || '#f8fbff';
+        el('cCorTexto').value = c.corTexto || '#1f2937';
+        logoBase64 = c.logoBase64 || '';
+        await aplicarPersonalizacao();
+      }
 
-      const queryId = new URLSearchParams(window.location.search).get('id');
-      if (queryId) {
-        getEl('emitId').value = queryId;
-        await issueCard(queryId);
+      const idUrl = new URLSearchParams(window.location.search).get('id');
+      if (idUrl) {
+        el('emitId').value = idUrl;
+        await emitir(idUrl);
       }
     }
 
-    function copyValidationLink() {
-      const text = getEl('lnk').textContent;
-      if (!text || text === '—') {
-        showMessage('msgEmit', 'Gere primeiro um QR para copiar o link.', 'error');
-        return;
-      }
+    document.addEventListener('DOMContentLoaded', () => {
+      el('formSocio').addEventListener('submit', guardarSocio);
+      el('btnLimpar').addEventListener('click', limparForm);
+      el('btnExportarBase').addEventListener('click', exportarBase);
+      el('btnEmitir').addEventListener('click', () => emitir(el('emitId').value.trim()));
+      el('btnCopiar').addEventListener('click', async () => {
+        const t = el('lnk').textContent;
+        if (!t || t === '—') return setMsg('msgEmit', 'Gere primeiro o QR.', false);
+        try { await navigator.clipboard.writeText(t); setMsg('msgEmit', 'Link copiado.', true); }
+        catch { setMsg('msgEmit', 'Falha ao copiar link.', false); }
+      });
+      el('btnPng').addEventListener('click', exportarPNG);
+      el('btnPdf').addEventListener('click', exportarPDF);
+      el('btnAplicarEstilo').addEventListener('click', () => {
+        aplicarPersonalizacao().catch(() => setMsg('msgEmit', 'Falha ao aplicar personalização.', false));
+      });
 
-      navigator.clipboard.writeText(text)
-        .then(() => showMessage('msgEmit', 'Link copiado com sucesso.', 'ok'))
-        .catch(() => showMessage('msgEmit', 'Não foi possível copiar automaticamente.', 'error'));
-    }
-
-    getEl('btnGuardar').addEventListener('click', saveSocio);
-    getEl('btnLimpar').addEventListener('click', () => {
-      clearForm();
-      showMessage('msgCrud', 'Formulário limpo.', 'ok');
-    });
-    getEl('btnExportarBase').addEventListener('click', exportSociosJson);
-
-    getEl('btnEmitir').addEventListener('click', () => issueCard(safeText(getEl('emitId').value)));
-    getEl('btnCopiar').addEventListener('click', copyValidationLink);
-    getEl('btnPng').addEventListener('click', exportCardAsPng);
-    getEl('btnPdf').addEventListener('click', exportCardAsPdf);
-
-    loadInitialData().catch((error) => {
-      updateValidationCard(null);
-      showMessage('msgEmit', error.message, 'error');
+      init().catch((err) => setMsg('msgEmit', err.message, false));
     });
   </script>
 </body>
