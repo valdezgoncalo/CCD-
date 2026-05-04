@@ -1,63 +1,371 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-PT">
 <head>
-  <meta charset="UTF-8">
-  <title>Validação CCD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCD • Emissão e Validação de Cartão de Sócio</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    :root {
+      --bg: #eef3fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1d4ed8;
+      --primary-dark: #1e40af;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --danger-bg: #fee2e2;
+      --danger-text: #991b1b;
+      --warning-bg: #fef3c7;
+      --warning-text: #92400e;
+      --border: #dce3ef;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #f5f8ff 0%, var(--bg) 100%);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      padding: 18px;
+    }
+
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 0 0 10px; color: var(--muted); }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: start;
+    }
+
+    .field { margin-bottom: 10px; }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+      color: #1f2937;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-light { background: #eef2ff; color: #1e3a8a; }
+    .btn-light:hover { background: #dbe7ff; }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .ativo { background: var(--success-bg); color: var(--success-text); }
+    .inativo { background: var(--danger-bg); color: var(--danger-text); }
+    .expirado { background: var(--warning-bg); color: var(--warning-text); }
+    .nao-encontrado { background: #e5e7eb; color: #374151; }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: #f8fbff;
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .member-card {
+      width: 100%;
+      max-width: 360px;
+      background: linear-gradient(135deg, #eff6ff, #ffffff);
+      border: 1px solid #d9e4f7;
+      border-radius: 16px;
+      padding: 14px;
+      text-align: left;
+    }
+
+    .member-card h3 { margin-bottom: 6px; }
+    .member-card .line { border-top: 1px dashed #c9d7ec; margin: 8px 0; }
+
+    .msg { font-weight: 600; font-size: 14px; }
+    .msg.ok { color: #166534; }
+    .msg.err { color: #991b1b; }
+
+    .small { font-size: 13px; }
+    code { background: #eff6ff; padding: 2px 6px; border-radius: 6px; }
+  </style>
 </head>
-<body style="font-family: Arial; text-align:center; margin-top:50px;">
+<body>
+  <main class="container">
+    <section class="box">
+      <h1>Sistema de Cartões de Sócio (CCD)</h1>
+      <p>Fluxo completo para <strong>emitir</strong> e <strong>validar</strong> cartões digitais com QR Code.</p>
+      <p class="small">Use links como: <code>?id=12345</code>. O parceiro só precisa abrir o link para validar o associado.</p>
+    </section>
 
-<h1 id="status">A validar...</h1>
-<h2 id="nome"></h2>
-<p id="numero"></p>
+    <section class="box grid">
+      <div>
+        <h2>1) Emissão do Cartão / QR</h2>
 
-<script>
-  const socios = [
-    {
-      id: "abc123",
-      nome: "Gonçalo Valdez",
-      numero: "1",
-      estado: "ativo"
-    },
-    {
-      id: "xyz456",
-      nome: "João Silva",
-      numero: "2",
-      estado: "inativo"
+        <div class="field">
+          <label for="inputId">ID / Número de sócio</label>
+          <input id="inputId" placeholder="Ex.: 12345" />
+        </div>
+
+        <div class="btn-row">
+          <button id="btnPesquisar" class="btn-primary" type="button">Pesquisar e Gerar QR</button>
+          <button id="btnCopiarLink" class="btn-light" type="button">Copiar Link</button>
+        </div>
+
+        <p id="msgEmissao" class="msg"></p>
+
+        <div class="card" style="margin-top: 12px;">
+          <canvas id="qrCanvas"></canvas>
+          <p class="small"><strong>Link:</strong> <a id="linkValidacao" href="#">—</a></p>
+        </div>
+      </div>
+
+      <div>
+        <h2>2) Validação no Parceiro</h2>
+        <p class="small">Quando o parceiro abre o link, o estado do sócio aparece abaixo.</p>
+
+        <div class="member-card">
+          <h3 id="tituloValidacao">Aguardando validação...</h3>
+          <span id="badgeStatus" class="status nao-encontrado">SEM DADOS</span>
+          <div class="line"></div>
+          <p><strong>Nome:</strong> <span id="nome">—</span></p>
+          <p><strong>Número:</strong> <span id="numero">—</span></p>
+          <p><strong>Estado:</strong> <span id="estado">—</span></p>
+          <p><strong>Validade:</strong> <span id="validade">—</span></p>
+          <p class="small" id="mensagem">Sem validação ainda.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const el = {
+      inputId: document.getElementById('inputId'),
+      btnPesquisar: document.getElementById('btnPesquisar'),
+      btnCopiarLink: document.getElementById('btnCopiarLink'),
+      msgEmissao: document.getElementById('msgEmissao'),
+      qrCanvas: document.getElementById('qrCanvas'),
+      linkValidacao: document.getElementById('linkValidacao'),
+      tituloValidacao: document.getElementById('tituloValidacao'),
+      badgeStatus: document.getElementById('badgeStatus'),
+      nome: document.getElementById('nome'),
+      numero: document.getElementById('numero'),
+      estado: document.getElementById('estado'),
+      validade: document.getElementById('validade'),
+      mensagem: document.getElementById('mensagem')
+    };
+
+    let baseSocios = [];
+
+    function formatarData(iso) {
+      if (!iso) return '—';
+      return new Date(iso + 'T00:00:00').toLocaleDateString('pt-PT');
     }
-    {
-  id: "novo789",
-  nome: "Maria Costa",
-  numero: "3",
-  estado: "ativo"
-}
-  {
-  id: "novo789",
-  nome: "cÁTIA",
-  numero: "3",
-  estado: "ativo"
-}
-  ];
 
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
+    function getClasseStatus(socio) {
+      if (!socio) return { classe: 'nao-encontrado', texto: 'NÃO ENCONTRADO', titulo: 'Sócio não encontrado' };
 
-  const socio = socios.find(s => s.id === id);
+      const hoje = new Date();
+      const expirado = socio.validade && new Date(socio.validade + 'T23:59:59') < hoje;
 
-  if (!socio) {
-    document.getElementById("status").innerText = "❌ Sócio não encontrado";
-  } else {
-    document.getElementById("nome").innerText = socio.nome;
-    document.getElementById("numero").innerText = "Nº " + socio.numero;
+      if (socio.estado !== 'ativo') {
+        return { classe: 'inativo', texto: 'INATIVO', titulo: 'Sócio inativo' };
+      }
 
-    if (socio.estado === "ativo") {
-      document.getElementById("status").innerText = "✅ Sócio Ativo";
-      document.body.style.backgroundColor = "#d4edda";
-    } else {
-      document.getElementById("status").innerText = "❌ Sócio Inativo";
-      document.body.style.backgroundColor = "#f8d7da";
+      if (expirado) {
+        return { classe: 'expirado', texto: 'EXPIRADO', titulo: 'Validade expirada' };
+      }
+
+      return { classe: 'ativo', texto: 'ATIVO', titulo: '✅ Sócio ativo' };
     }
-  }
-</script>
 
+    function normalizarBase(data) {
+      return Array.isArray(data) ? data : [data];
+    }
+
+    function procurarSocio(id) {
+      return baseSocios.find(
+        s => String(s.id) === String(id) || String(s.numero) === String(id)
+      ) || null;
+    }
+
+    function gerarLinkValidacao(id) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('id', id);
+      return url.toString();
+    }
+
+    function limparMensagemEmissao() {
+      el.msgEmissao.className = 'msg';
+      el.msgEmissao.textContent = '';
+    }
+
+    function mostrarMensagemEmissao(texto, tipo) {
+      el.msgEmissao.className = `msg ${tipo === 'ok' ? 'ok' : 'err'}`;
+      el.msgEmissao.textContent = texto;
+    }
+
+    function atualizarCardValidacao(socio) {
+      const info = getClasseStatus(socio);
+
+      el.tituloValidacao.textContent = info.titulo;
+      el.badgeStatus.className = `status ${info.classe}`;
+      el.badgeStatus.textContent = info.texto;
+
+      el.nome.textContent = socio?.nome || '—';
+      el.numero.textContent = socio?.numero || '—';
+      el.estado.textContent = socio?.estado || '—';
+      el.validade.textContent = formatarData(socio?.validade);
+      el.mensagem.textContent = socio
+        ? 'Mostre este cartão no parceiro para aplicar o desconto.'
+        : 'Confirme o ID do QR Code.';
+    }
+
+    async function desenharQr(link) {
+      await QRCode.toCanvas(el.qrCanvas, link, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#111827',
+          light: '#ffffff'
+        }
+      });
+    }
+
+    async function processarEmissao(id) {
+      limparMensagemEmissao();
+      if (!id) {
+        mostrarMensagemEmissao('Indique um ID / número de sócio.', 'err');
+        return;
+      }
+
+      const socio = procurarSocio(id);
+      if (!socio) {
+        atualizarCardValidacao(null);
+        mostrarMensagemEmissao('Sócio não encontrado na base.', 'err');
+        return;
+      }
+
+      const link = gerarLinkValidacao(id);
+      await desenharQr(link);
+      el.linkValidacao.href = link;
+      el.linkValidacao.textContent = link;
+
+      atualizarCardValidacao(socio);
+      mostrarMensagemEmissao('QR gerado com sucesso.', 'ok');
+    }
+
+    async function carregarBase() {
+      const resposta = await fetch('./socios.json');
+      if (!resposta.ok) {
+        throw new Error('Não foi possível carregar socios.json');
+      }
+
+      const data = await resposta.json();
+      baseSocios = normalizarBase(data);
+    }
+
+    async function validarPeloParametroUrl() {
+      const idUrl = new URLSearchParams(window.location.search).get('id');
+      if (!idUrl) return;
+
+      el.inputId.value = idUrl;
+      await processarEmissao(idUrl);
+    }
+
+    async function copiarLink() {
+      const link = el.linkValidacao.textContent;
+      if (!link || link === '—') {
+        mostrarMensagemEmissao('Primeiro gere um QR para obter o link.', 'err');
+        return;
+      }
+
+      await navigator.clipboard.writeText(link);
+      mostrarMensagemEmissao('Link copiado para a área de transferência.', 'ok');
+    }
+
+    async function iniciar() {
+      try {
+        await carregarBase();
+
+        el.btnPesquisar.addEventListener('click', async () => {
+          await processarEmissao(el.inputId.value.trim());
+        });
+
+        el.btnCopiarLink.addEventListener('click', async () => {
+          try {
+            await copiarLink();
+          } catch {
+            mostrarMensagemEmissao('Não foi possível copiar automaticamente neste navegador.', 'err');
+          }
+        });
+
+        await validarPeloParametroUrl();
+      } catch (erro) {
+        atualizarCardValidacao(null);
+        el.tituloValidacao.textContent = 'Erro no carregamento';
+        el.mensagem.textContent = erro.message;
+      }
+    }
+
+    iniciar();
+  </script>
 </body>
 </html>
