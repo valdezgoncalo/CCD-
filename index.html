@@ -3,369 +3,516 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCD • Emissão e Validação de Cartão de Sócio</title>
+  <title>CCD • Gestão de Sócios e Cartão Digital</title>
+
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
   <style>
     :root {
       --bg: #eef3fb;
       --panel: #ffffff;
+      --border: #dbe5f2;
+      --primary: #1d4ed8;
+      --primary-soft: #e8efff;
       --text: #1f2937;
       --muted: #6b7280;
-      --primary: #1d4ed8;
-      --primary-dark: #1e40af;
-      --success-bg: #dcfce7;
-      --success-text: #166534;
-      --danger-bg: #fee2e2;
-      --danger-text: #991b1b;
-      --warning-bg: #fef3c7;
-      --warning-text: #92400e;
-      --border: #dce3ef;
+      --ok-bg: #dcfce7;
+      --ok-tx: #166534;
+      --bad-bg: #fee2e2;
+      --bad-tx: #991b1b;
+      --warn-bg: #fef3c7;
+      --warn-tx: #92400e;
+      --neutral-bg: #e5e7eb;
+      --neutral-tx: #374151;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(180deg, #f5f8ff 0%, var(--bg) 100%);
-      color: var(--text);
       padding: 20px;
+      font-family: Inter, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #f5f8ff 0%, var(--bg) 100%);
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       display: grid;
-      gap: 18px;
+      gap: 16px;
     }
 
-    .box {
+    .panel {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-      padding: 18px;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
     }
-
-    h1, h2, h3 { margin: 0 0 10px; }
-    p { margin: 0 0 10px; color: var(--muted); }
 
     .grid {
       display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
       gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       align-items: start;
     }
 
-    .field { margin-bottom: 10px; }
-    label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 6px;
-      color: #1f2937;
+    h1, h2, h3 {
+      margin: 0 0 8px;
     }
 
-    input, select {
+    p {
+      margin: 0 0 10px;
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    input,
+    select {
       width: 100%;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
+      border-radius: 8px;
+      padding: 10px;
       font-size: 14px;
-      outline: none;
       background: #fff;
     }
 
-    input:focus, select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
-    }
-
-    .btn-row {
+    .row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 10px;
     }
 
-    button {
+    .btn {
       border: 0;
-      border-radius: 10px;
-      padding: 10px 14px;
+      border-radius: 8px;
+      padding: 10px 12px;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-light { background: #eef2ff; color: #1e3a8a; }
-    .btn-light:hover { background: #dbe7ff; }
-
-    .status {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .2px;
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
     }
 
-    .ativo { background: var(--success-bg); color: var(--success-text); }
-    .inativo { background: var(--danger-bg); color: var(--danger-text); }
-    .expirado { background: var(--warning-bg); color: var(--warning-text); }
-    .nao-encontrado { background: #e5e7eb; color: #374151; }
+    .btn-secondary {
+      background: var(--primary-soft);
+      color: #1e3a8a;
+    }
+
+    .btn-danger {
+      background: var(--bad-bg);
+      color: var(--bad-tx);
+    }
 
     .card {
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 12px;
       background: #f8fbff;
-      display: grid;
-      justify-items: center;
-      text-align: center;
-      gap: 10px;
     }
 
-    .member-card {
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status-ativo { background: var(--ok-bg); color: var(--ok-tx); }
+    .status-inativo { background: var(--bad-bg); color: var(--bad-tx); }
+    .status-expirado { background: var(--warn-bg); color: var(--warn-tx); }
+    .status-neutro { background: var(--neutral-bg); color: var(--neutral-tx); }
+
+    .msg {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .msg-ok { color: var(--ok-tx); }
+    .msg-error { color: var(--bad-tx); }
+
+    table {
       width: 100%;
-      max-width: 360px;
-      background: linear-gradient(135deg, #eff6ff, #ffffff);
-      border: 1px solid #d9e4f7;
-      border-radius: 16px;
-      padding: 14px;
-      text-align: left;
+      border-collapse: collapse;
+      font-size: 14px;
     }
 
-    .member-card h3 { margin-bottom: 6px; }
-    .member-card .line { border-top: 1px dashed #c9d7ec; margin: 8px 0; }
+    th,
+    td {
+      text-align: left;
+      border-bottom: 1px solid #edf2fb;
+      padding: 8px;
+      vertical-align: top;
+    }
 
-    .msg { font-weight: 600; font-size: 14px; }
-    .msg.ok { color: #166534; }
-    .msg.err { color: #991b1b; }
-
-    .small { font-size: 13px; }
-    code { background: #eff6ff; padding: 2px 6px; border-radius: 6px; }
+    .table-wrap {
+      max-height: 280px;
+      overflow: auto;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <main class="container">
-    <section class="box">
-      <h1>Sistema de Cartões de Sócio (CCD)</h1>
-      <p>Fluxo completo para <strong>emitir</strong> e <strong>validar</strong> cartões digitais com QR Code.</p>
-      <p class="small">Use links como: <code>?id=12345</code>. O parceiro só precisa abrir o link para validar o associado.</p>
+    <section class="panel">
+      <h1>CCD • Gestão de Sócios + Cartão Digital QR</h1>
+      <p>Painel completo para registar/editar sócios, gerar cartão e validar descontos no parceiro.</p>
+      <p class="small">Validação por link: <code>?id=12345</code></p>
     </section>
 
-    <section class="box grid">
-      <div>
-        <h2>1) Emissão do Cartão / QR</h2>
+    <section class="panel grid">
+      <article>
+        <h2>1) Registo / Edição de Sócios</h2>
 
+        <div class="field"><label for="fId">ID do Sócio</label><input id="fId" /></div>
+        <div class="field"><label for="fNumero">Número</label><input id="fNumero" /></div>
+        <div class="field"><label for="fNome">Nome</label><input id="fNome" /></div>
         <div class="field">
-          <label for="inputId">ID / Número de sócio</label>
-          <input id="inputId" placeholder="Ex.: 12345" />
+          <label for="fEstado">Estado</label>
+          <select id="fEstado">
+            <option value="ativo">ativo</option>
+            <option value="inativo">inativo</option>
+          </select>
+        </div>
+        <div class="field"><label for="fValidade">Validade</label><input id="fValidade" type="date" /></div>
+
+        <div class="row">
+          <button class="btn btn-primary" id="btnGuardar" type="button">Guardar / Atualizar</button>
+          <button class="btn btn-secondary" id="btnLimpar" type="button">Limpar</button>
+          <button class="btn btn-secondary" id="btnExportarBase" type="button">Exportar JSON</button>
         </div>
 
-        <div class="btn-row">
-          <button id="btnPesquisar" class="btn-primary" type="button">Pesquisar e Gerar QR</button>
-          <button id="btnCopiarLink" class="btn-light" type="button">Copiar Link</button>
+        <p id="msgCrud" class="msg"></p>
+
+        <div class="card table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Estado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tbSocios"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article>
+        <h2>2) Emissão / Validação do Cartão</h2>
+
+        <div class="field"><label for="emitId">ID ou Número para emissão</label><input id="emitId" placeholder="Ex.: 12345" /></div>
+
+        <div class="row">
+          <button class="btn btn-primary" id="btnEmitir" type="button">Gerar QR</button>
+          <button class="btn btn-secondary" id="btnCopiar" type="button">Copiar Link</button>
+          <button class="btn btn-secondary" id="btnPng" type="button">Exportar PNG</button>
+          <button class="btn btn-secondary" id="btnPdf" type="button">Exportar PDF</button>
         </div>
 
-        <p id="msgEmissao" class="msg"></p>
+        <p id="msgEmit" class="msg"></p>
 
-        <div class="card" style="margin-top: 12px;">
-          <canvas id="qrCanvas"></canvas>
-          <p class="small"><strong>Link:</strong> <a id="linkValidacao" href="#">—</a></p>
+        <div class="card" id="cartaoExportavel">
+          <h3 id="ttl">Aguardando validação...</h3>
+          <span id="badge" class="status status-neutro">SEM DADOS</span>
+
+          <p><strong>Nome:</strong> <span id="vNome">—</span></p>
+          <p><strong>Número:</strong> <span id="vNumero">—</span></p>
+          <p><strong>Estado:</strong> <span id="vEstado">—</span></p>
+          <p><strong>Validade:</strong> <span id="vValidade">—</span></p>
+
+          <canvas id="qr" style="margin-top: 8px;"></canvas>
+          <p class="small"><a id="lnk" href="#">—</a></p>
         </div>
-      </div>
-
-      <div>
-        <h2>2) Validação no Parceiro</h2>
-        <p class="small">Quando o parceiro abre o link, o estado do sócio aparece abaixo.</p>
-
-        <div class="member-card">
-          <h3 id="tituloValidacao">Aguardando validação...</h3>
-          <span id="badgeStatus" class="status nao-encontrado">SEM DADOS</span>
-          <div class="line"></div>
-          <p><strong>Nome:</strong> <span id="nome">—</span></p>
-          <p><strong>Número:</strong> <span id="numero">—</span></p>
-          <p><strong>Estado:</strong> <span id="estado">—</span></p>
-          <p><strong>Validade:</strong> <span id="validade">—</span></p>
-          <p class="small" id="mensagem">Sem validação ainda.</p>
-        </div>
-      </div>
+      </article>
     </section>
   </main>
 
   <script>
-    const el = {
-      inputId: document.getElementById('inputId'),
-      btnPesquisar: document.getElementById('btnPesquisar'),
-      btnCopiarLink: document.getElementById('btnCopiarLink'),
-      msgEmissao: document.getElementById('msgEmissao'),
-      qrCanvas: document.getElementById('qrCanvas'),
-      linkValidacao: document.getElementById('linkValidacao'),
-      tituloValidacao: document.getElementById('tituloValidacao'),
-      badgeStatus: document.getElementById('badgeStatus'),
-      nome: document.getElementById('nome'),
-      numero: document.getElementById('numero'),
-      estado: document.getElementById('estado'),
-      validade: document.getElementById('validade'),
-      mensagem: document.getElementById('mensagem')
-    };
+    const getEl = (id) => document.getElementById(id);
+    const STORAGE_KEY = 'ccd_socios';
+    let socios = [];
 
-    let baseSocios = [];
-
-    function formatarData(iso) {
-      if (!iso) return '—';
-      return new Date(iso + 'T00:00:00').toLocaleDateString('pt-PT');
+    function safeText(value) {
+      return String(value ?? '').trim();
     }
 
-    function getClasseStatus(socio) {
-      if (!socio) return { classe: 'nao-encontrado', texto: 'NÃO ENCONTRADO', titulo: 'Sócio não encontrado' };
+    function showMessage(targetId, text, type) {
+      const target = getEl(targetId);
+      target.className = `msg ${type === 'ok' ? 'msg-ok' : 'msg-error'}`;
+      target.textContent = text;
+    }
 
-      const hoje = new Date();
-      const expirado = socio.validade && new Date(socio.validade + 'T23:59:59') < hoje;
+    function formatDate(isoDate) {
+      if (!isoDate) return '—';
+      return new Date(`${isoDate}T00:00:00`).toLocaleDateString('pt-PT');
+    }
 
+    function persistSocios() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(socios));
+    }
+
+    function findSocio(key) {
+      return socios.find((s) => String(s.id) === String(key) || String(s.numero) === String(key)) || null;
+    }
+
+    function getStatusInfo(socio) {
+      if (!socio) {
+        return { title: 'Sócio não encontrado', badgeText: 'NÃO ENCONTRADO', badgeClass: 'status status-neutro' };
+      }
+
+      const expired = socio.validade && new Date(`${socio.validade}T23:59:59`) < new Date();
       if (socio.estado !== 'ativo') {
-        return { classe: 'inativo', texto: 'INATIVO', titulo: 'Sócio inativo' };
+        return { title: 'Sócio inativo', badgeText: 'INATIVO', badgeClass: 'status status-inativo' };
+      }
+      if (expired) {
+        return { title: 'Validade expirada', badgeText: 'EXPIRADO', badgeClass: 'status status-expirado' };
       }
 
-      if (expirado) {
-        return { classe: 'expirado', texto: 'EXPIRADO', titulo: 'Validade expirada' };
-      }
-
-      return { classe: 'ativo', texto: 'ATIVO', titulo: '✅ Sócio ativo' };
+      return { title: '✅ Sócio ativo', badgeText: 'ATIVO', badgeClass: 'status status-ativo' };
     }
 
-    function normalizarBase(data) {
-      return Array.isArray(data) ? data : [data];
-    }
-
-    function procurarSocio(id) {
-      return baseSocios.find(
-        s => String(s.id) === String(id) || String(s.numero) === String(id)
-      ) || null;
-    }
-
-    function gerarLinkValidacao(id) {
+    function buildValidationLink(id) {
       const url = new URL(window.location.href);
       url.searchParams.set('id', id);
       return url.toString();
     }
 
-    function limparMensagemEmissao() {
-      el.msgEmissao.className = 'msg';
-      el.msgEmissao.textContent = '';
+    function clearForm() {
+      getEl('fId').value = '';
+      getEl('fNumero').value = '';
+      getEl('fNome').value = '';
+      getEl('fEstado').value = 'ativo';
+      getEl('fValidade').value = '';
     }
 
-    function mostrarMensagemEmissao(texto, tipo) {
-      el.msgEmissao.className = `msg ${tipo === 'ok' ? 'ok' : 'err'}`;
-      el.msgEmissao.textContent = texto;
+    function loadFormFromSocio(socio) {
+      getEl('fId').value = socio.id;
+      getEl('fNumero').value = socio.numero;
+      getEl('fNome').value = socio.nome;
+      getEl('fEstado').value = socio.estado;
+      getEl('fValidade').value = socio.validade || '';
     }
 
-    function atualizarCardValidacao(socio) {
-      const info = getClasseStatus(socio);
-
-      el.tituloValidacao.textContent = info.titulo;
-      el.badgeStatus.className = `status ${info.classe}`;
-      el.badgeStatus.textContent = info.texto;
-
-      el.nome.textContent = socio?.nome || '—';
-      el.numero.textContent = socio?.numero || '—';
-      el.estado.textContent = socio?.estado || '—';
-      el.validade.textContent = formatarData(socio?.validade);
-      el.mensagem.textContent = socio
-        ? 'Mostre este cartão no parceiro para aplicar o desconto.'
-        : 'Confirme o ID do QR Code.';
+    function removeSocio(id) {
+      socios = socios.filter((s) => String(s.id) !== String(id));
+      persistSocios();
+      renderTable();
+      showMessage('msgCrud', 'Sócio removido com sucesso.', 'ok');
     }
 
-    async function desenharQr(link) {
-      await QRCode.toCanvas(el.qrCanvas, link, {
-        width: 200,
-        margin: 1,
-        color: {
-          dark: '#111827',
-          light: '#ffffff'
-        }
+    function renderTable() {
+      const tbody = getEl('tbSocios');
+      tbody.innerHTML = '';
+
+      socios.forEach((socio) => {
+        const tr = document.createElement('tr');
+
+        const tdId = document.createElement('td');
+        tdId.textContent = socio.id;
+
+        const tdNome = document.createElement('td');
+        tdNome.textContent = socio.nome;
+
+        const tdEstado = document.createElement('td');
+        tdEstado.textContent = socio.estado;
+
+        const tdActions = document.createElement('td');
+        const btnEdit = document.createElement('button');
+        btnEdit.type = 'button';
+        btnEdit.className = 'btn btn-secondary';
+        btnEdit.textContent = 'Editar';
+        btnEdit.addEventListener('click', () => {
+          loadFormFromSocio(socio);
+          showMessage('msgCrud', `Editar sócio ${socio.id}.`, 'ok');
+        });
+
+        const btnDelete = document.createElement('button');
+        btnDelete.type = 'button';
+        btnDelete.className = 'btn btn-danger';
+        btnDelete.textContent = 'Apagar';
+        btnDelete.style.marginLeft = '6px';
+        btnDelete.addEventListener('click', () => removeSocio(socio.id));
+
+        tdActions.append(btnEdit, btnDelete);
+
+        tr.append(tdId, tdNome, tdEstado, tdActions);
+        tbody.appendChild(tr);
       });
     }
 
-    async function processarEmissao(id) {
-      limparMensagemEmissao();
-      if (!id) {
-        mostrarMensagemEmissao('Indique um ID / número de sócio.', 'err');
+    function saveSocio() {
+      const id = safeText(getEl('fId').value);
+      const numero = safeText(getEl('fNumero').value);
+      const nome = safeText(getEl('fNome').value);
+      const estado = safeText(getEl('fEstado').value) || 'ativo';
+      const validade = safeText(getEl('fValidade').value);
+
+      if (!id || !numero || !nome) {
+        showMessage('msgCrud', 'Preencha ID, Número e Nome.', 'error');
         return;
       }
 
-      const socio = procurarSocio(id);
+      const record = { id, numero, nome, estado, validade, foto: '' };
+      const existingIndex = socios.findIndex((s) => String(s.id) === String(id));
+
+      if (existingIndex >= 0) {
+        socios[existingIndex] = record;
+      } else {
+        socios.push(record);
+      }
+
+      persistSocios();
+      renderTable();
+      showMessage('msgCrud', 'Registo guardado com sucesso.', 'ok');
+    }
+
+    function updateValidationCard(socio) {
+      const status = getStatusInfo(socio);
+
+      getEl('ttl').textContent = status.title;
+      getEl('badge').className = status.badgeClass;
+      getEl('badge').textContent = status.badgeText;
+
+      getEl('vNome').textContent = socio?.nome || '—';
+      getEl('vNumero').textContent = socio?.numero || '—';
+      getEl('vEstado').textContent = socio?.estado || '—';
+      getEl('vValidade').textContent = formatDate(socio?.validade);
+    }
+
+    async function issueCard(key) {
+      if (!key) {
+        showMessage('msgEmit', 'Indique um ID ou Número.', 'error');
+        return;
+      }
+
+      const socio = findSocio(key);
       if (!socio) {
-        atualizarCardValidacao(null);
-        mostrarMensagemEmissao('Sócio não encontrado na base.', 'err');
+        updateValidationCard(null);
+        showMessage('msgEmit', 'Sócio não encontrado.', 'error');
         return;
       }
 
-      const link = gerarLinkValidacao(id);
-      await desenharQr(link);
-      el.linkValidacao.href = link;
-      el.linkValidacao.textContent = link;
+      const link = buildValidationLink(key);
+      await QRCode.toCanvas(getEl('qr'), link, { width: 190, margin: 1 });
 
-      atualizarCardValidacao(socio);
-      mostrarMensagemEmissao('QR gerado com sucesso.', 'ok');
+      const linkEl = getEl('lnk');
+      linkEl.href = link;
+      linkEl.textContent = link;
+
+      updateValidationCard(socio);
+      showMessage('msgEmit', 'QR gerado com sucesso.', 'ok');
     }
 
-    async function carregarBase() {
-      const resposta = await fetch('./socios.json');
-      if (!resposta.ok) {
-        throw new Error('Não foi possível carregar socios.json');
+    async function exportCardAsPng() {
+      const canvas = await html2canvas(getEl('cartaoExportavel'), { backgroundColor: '#ffffff' });
+      const anchor = document.createElement('a');
+      anchor.href = canvas.toDataURL('image/png');
+      anchor.download = 'cartao-socio.png';
+      anchor.click();
+      showMessage('msgEmit', 'Cartão exportado em PNG.', 'ok');
+    }
+
+    async function exportCardAsPdf() {
+      const canvas = await html2canvas(getEl('cartaoExportavel'), { backgroundColor: '#ffffff' });
+      const image = canvas.toDataURL('image/png');
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+      const width = 180;
+      const height = (canvas.height * width) / canvas.width;
+
+      pdf.addImage(image, 'PNG', 15, 20, width, height);
+      pdf.save('cartao-socio.pdf');
+
+      showMessage('msgEmit', 'Cartão exportado em PDF.', 'ok');
+    }
+
+    function exportSociosJson() {
+      const blob = new Blob([JSON.stringify(socios, null, 2)], { type: 'application/json' });
+      const anchor = document.createElement('a');
+      anchor.href = URL.createObjectURL(blob);
+      anchor.download = 'socios.json';
+      anchor.click();
+      URL.revokeObjectURL(anchor.href);
+      showMessage('msgCrud', 'Base exportada com sucesso.', 'ok');
+    }
+
+    async function loadInitialData() {
+      const fromStorage = localStorage.getItem(STORAGE_KEY);
+      if (fromStorage) {
+        socios = JSON.parse(fromStorage);
+      } else {
+        const response = await fetch('./socios.json');
+        if (!response.ok) throw new Error('Falha ao carregar socios.json');
+
+        const data = await response.json();
+        socios = Array.isArray(data) ? data : [data];
+        persistSocios();
       }
 
-      const data = await resposta.json();
-      baseSocios = normalizarBase(data);
+      renderTable();
+
+      const queryId = new URLSearchParams(window.location.search).get('id');
+      if (queryId) {
+        getEl('emitId').value = queryId;
+        await issueCard(queryId);
+      }
     }
 
-    async function validarPeloParametroUrl() {
-      const idUrl = new URLSearchParams(window.location.search).get('id');
-      if (!idUrl) return;
-
-      el.inputId.value = idUrl;
-      await processarEmissao(idUrl);
-    }
-
-    async function copiarLink() {
-      const link = el.linkValidacao.textContent;
-      if (!link || link === '—') {
-        mostrarMensagemEmissao('Primeiro gere um QR para obter o link.', 'err');
+    function copyValidationLink() {
+      const text = getEl('lnk').textContent;
+      if (!text || text === '—') {
+        showMessage('msgEmit', 'Gere primeiro um QR para copiar o link.', 'error');
         return;
       }
 
-      await navigator.clipboard.writeText(link);
-      mostrarMensagemEmissao('Link copiado para a área de transferência.', 'ok');
+      navigator.clipboard.writeText(text)
+        .then(() => showMessage('msgEmit', 'Link copiado com sucesso.', 'ok'))
+        .catch(() => showMessage('msgEmit', 'Não foi possível copiar automaticamente.', 'error'));
     }
 
-    async function iniciar() {
-      try {
-        await carregarBase();
+    getEl('btnGuardar').addEventListener('click', saveSocio);
+    getEl('btnLimpar').addEventListener('click', () => {
+      clearForm();
+      showMessage('msgCrud', 'Formulário limpo.', 'ok');
+    });
+    getEl('btnExportarBase').addEventListener('click', exportSociosJson);
 
-        el.btnPesquisar.addEventListener('click', async () => {
-          await processarEmissao(el.inputId.value.trim());
-        });
+    getEl('btnEmitir').addEventListener('click', () => issueCard(safeText(getEl('emitId').value)));
+    getEl('btnCopiar').addEventListener('click', copyValidationLink);
+    getEl('btnPng').addEventListener('click', exportCardAsPng);
+    getEl('btnPdf').addEventListener('click', exportCardAsPdf);
 
-        el.btnCopiarLink.addEventListener('click', async () => {
-          try {
-            await copiarLink();
-          } catch {
-            mostrarMensagemEmissao('Não foi possível copiar automaticamente neste navegador.', 'err');
-          }
-        });
-
-        await validarPeloParametroUrl();
-      } catch (erro) {
-        atualizarCardValidacao(null);
-        el.tituloValidacao.textContent = 'Erro no carregamento';
-        el.mensagem.textContent = erro.message;
-      }
-    }
-
-    iniciar();
+    loadInitialData().catch((error) => {
+      updateValidationCard(null);
+      showMessage('msgEmit', error.message, 'error');
+    });
   </script>
 </body>
 </html>
