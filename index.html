@@ -3,346 +3,774 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCD • Gestão de Sócios e Cartão Personalizado</title>
+  <title>CCD • Gestão de Sócios</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <style>
-    :root { --bg:#eef3fb; --panel:#fff; --border:#dbe5f2; --primary:#1d4ed8; --muted:#6b7280; --text:#1f2937; }
-    *{box-sizing:border-box} body{margin:0;padding:20px;background:linear-gradient(180deg,#f5f8ff,var(--bg));font-family:Inter,Segoe UI,Roboto,sans-serif;color:var(--text)}
-    .container{max-width:1200px;margin:0 auto;display:grid;gap:16px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 8px 22px rgba(0,0,0,.06)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}.field{margin-bottom:10px}label{display:block;font-weight:600;margin-bottom:4px}
-    input,select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px}.row{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:#1d4ed8;color:#fff}.secondary{background:#e8efff;color:#1e3a8a}.danger{background:#fee2e2;color:#991b1b}
-    .card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#f8fbff}.msg{font-size:13px;font-weight:700}.ok{color:#166534}.err{color:#991b1b}
-    .status{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700}.ativo{background:#dcfce7;color:#166534}.inativo{background:#fee2e2;color:#991b1b}.expirado{background:#fef3c7;color:#92400e}.na{background:#e5e7eb;color:#374151}
-    .table-wrap{max-height:260px;overflow:auto} table{width:100%;border-collapse:collapse} th,td{padding:8px;border-bottom:1px solid #edf2fb;text-align:left}
-    .foto-preview{width:96px;height:96px;border-radius:12px;object-fit:cover;border:1px solid var(--border);background:#fff}
-    .cartao-top{display:flex;gap:12px;align-items:center}
-    .custom-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161e;
+      --surface2: #1a1e29;
+      --border: #252a38;
+      --border2: #2e3447;
+      --primary: #4f7cff;
+      --primary-dim: rgba(79,124,255,.15);
+      --accent: #00e5a0;
+      --accent-dim: rgba(0,229,160,.12);
+      --text: #eef2ff;
+      --muted: #7a84a0;
+      --danger: #ff4f6a;
+      --danger-dim: rgba(255,79,106,.12);
+      --warn: #ffb547;
+      --green: #00e5a0;
+      --red: #ff4f6a;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 24px 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(79,124,255,.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap { max-width: 1160px; margin: 0 auto; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Header */
+    .header {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .header-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--primary-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .header h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+    .header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* Grid */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Panel */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+    }
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title::before {
+      content: ''; display: inline-block;
+      width: 4px; height: 16px;
+      background: var(--primary); border-radius: 2px;
+    }
+
+    /* Form */
+    .field { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .5px; }
+    input[type="text"], input:not([type="file"]):not([type="color"]):not([type="date"]), select, input[type="date"] {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 9px; padding: 10px 13px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    select option { background: var(--surface2); }
+
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+    /* Buttons */
+    .btn {
+      border: 0; border-radius: 9px; padding: 9px 14px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn:hover { opacity: .85; }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-secondary { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(79,124,255,.25); }
+    .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(255,79,106,.25); }
+    .btn-accent { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,229,160,.25); }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+    /* Message */
+    .msg { font-size: 12px; font-weight: 600; margin-top: 10px; min-height: 18px; }
+    .msg-ok { color: var(--accent); }
+    .msg-err { color: var(--danger); }
+
+    /* Table */
+    .table-wrap { margin-top: 14px; max-height: 220px; overflow: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 9px 10px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; background: var(--surface2); text-align: left; position: sticky; top: 0; }
+    td { padding: 8px 10px; border-top: 1px solid var(--border); font-size: 13px; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+
+    /* Status badges */
+    .badge {
+      display: inline-block; padding: 3px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .badge-ativo { background: rgba(0,229,160,.15); color: var(--accent); }
+    .badge-inativo { background: var(--danger-dim); color: var(--danger); }
+    .badge-expirado { background: rgba(255,181,71,.12); color: var(--warn); }
+    .badge-na { background: rgba(122,132,160,.12); color: var(--muted); }
+
+    /* Validation overlay */
+    #validationOverlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 999;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+      animation: fadeIn .3s ease;
+    }
+    #validationOverlay.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    #overlayBg {
+      position: absolute; inset: 0;
+      transition: background .4s ease;
+    }
+    #overlayBg.green { background: rgba(0, 229, 160, .92); }
+    #overlayBg.red { background: rgba(255, 79, 106, .92); }
+
+    #overlayContent {
+      position: relative; z-index: 2;
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .overlay-icon {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(0,0,0,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px;
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .overlay-title {
+      font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800;
+      color: #fff; line-height: 1; text-shadow: 0 2px 20px rgba(0,0,0,.3);
+    }
+    .overlay-sub { font-size: 18px; color: rgba(255,255,255,.85); font-weight: 500; }
+    .overlay-name { font-size: 28px; font-weight: 700; color: #fff; }
+    .overlay-close {
+      margin-top: 8px; background: rgba(0,0,0,.25); color: #fff;
+      border: 0; border-radius: 9px; padding: 11px 28px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .overlay-close:hover { background: rgba(0,0,0,.4); }
+
+    /* ── Card Wrapper ── */
+    #cartaoExportavel {
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      font-family: 'DM Sans', sans-serif;
+      box-shadow: 0 8px 32px rgba(0,0,0,.35);
+      min-height: 200px;
+      margin-top: 14px;
+    }
+
+    /* Card layout */
+    .card-inner {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header-text { flex: 1; }
+    .card-header-text #cardTitulo {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px; font-weight: 800; line-height: 1.1;
+      display: block;
+    }
+    .card-header-text #cardSubtitulo {
+      font-size: 12px; opacity: .7; margin-top: 2px;
+      display: block;
+    }
+
+    #cardLogo {
+      width: 52px; height: 52px; border-radius: 10px;
+      object-fit: cover; border: 2px solid rgba(255,255,255,.2);
+      flex-shrink: 0;
+    }
+
+    .card-body {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    #cardFoto {
+      width: 78px; height: 78px; border-radius: 12px;
+      object-fit: cover; border: 2px solid rgba(255,255,255,.25);
+      flex-shrink: 0;
+    }
+
+    .card-info { flex: 1; }
+    .card-name { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; line-height: 1.1; }
+    .card-meta { font-size: 12px; opacity: .7; margin-top: 4px; }
+    .card-meta span { display: block; margin-bottom: 2px; }
+
+    .card-footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .card-qr-wrap {
+      background: #fff;
+      border-radius: 10px;
+      padding: 6px;
+      display: inline-flex;
+    }
+    #qr { display: block; }
+
+    .card-status-badge {
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; align-self: flex-end; margin-bottom: 6px;
+    }
+    .card-status-badge.ativo { background: rgba(0,229,160,.25); color: #00e5a0; }
+    .card-status-badge.inativo { background: rgba(255,79,106,.25); color: #ff4f6a; }
+    .card-status-badge.expirado { background: rgba(255,181,71,.25); color: #ffb547; }
+    .card-status-badge.na { background: rgba(255,255,255,.1); color: rgba(255,255,255,.6); }
+
+    /* Customization */
+    .custom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .color-row { display: flex; gap: 10px; align-items: center; }
+    input[type="color"] {
+      width: 40px; height: 36px; padding: 2px; border-radius: 8px;
+      border: 1px solid var(--border2); background: var(--surface2); cursor: pointer;
+    }
+
+    /* Separador */
+    .sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+    /* File input style */
+    .file-btn-label {
+      display: inline-block; background: var(--surface2);
+      border: 1px dashed var(--border2);
+      border-radius: 9px; padding: 9px 14px;
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .file-btn-label:hover { border-color: var(--primary); color: var(--primary); }
+    input[type="file"] { display: none; }
+
+    .foto-preview-small {
+      width: 42px; height: 42px; border-radius: 8px; object-fit: cover;
+      border: 1px solid var(--border2); background: var(--surface2);
+      vertical-align: middle; margin-left: 8px;
+    }
   </style>
 </head>
 <body>
-  <main class="container">
+
+<!-- Validation overlay -->
+<div id="validationOverlay">
+  <div id="overlayBg" class="green"></div>
+  <div id="overlayContent">
+    <div class="overlay-icon" id="overlayIcon">✅</div>
+    <div class="overlay-title" id="overlayTitle">ATIVO</div>
+    <div class="overlay-name" id="overlayName">—</div>
+    <div class="overlay-sub" id="overlaySub">—</div>
+    <button class="overlay-close" id="overlayCloseBtn">Fechar</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-icon">🪪</div>
+    <div>
+      <h1>CCD • Gestão de Sócios</h1>
+      <p>Registo, cartão personalizado com QR e validação visual</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: Register -->
     <section class="panel">
-      <h1>CCD • Cartão de Sócio com QR + Foto</h1>
-      <p style="color:var(--muted)">Agora com botão de guardar funcional e personalização com imagem/foto no cartão.</p>
+      <div class="panel-title">Registar / Editar Sócio</div>
+
+      <form id="formSocio">
+        <div class="field">
+          <label for="fId">ID do Sócio</label>
+          <input id="fId" type="text" placeholder="ex: 001" required />
+        </div>
+        <div class="field">
+          <label for="fNumero">Número</label>
+          <input id="fNumero" type="text" placeholder="ex: 12345" required />
+        </div>
+        <div class="field">
+          <label for="fNome">Nome Completo</label>
+          <input id="fNome" type="text" placeholder="ex: João Silva" required />
+        </div>
+        <div class="field">
+          <label for="fEstado">Estado</label>
+          <select id="fEstado">
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fValidade">Validade</label>
+          <input id="fValidade" type="date" />
+        </div>
+
+        <div class="field">
+          <label>Foto do Sócio</label>
+          <label class="file-btn-label" for="fFoto">📷 Escolher foto...
+            <img id="prevFoto" class="foto-preview-small" src="" style="display:none" />
+          </label>
+          <input id="fFoto" type="file" accept="image/*" />
+        </div>
+
+        <div class="row">
+          <button class="btn btn-primary" type="submit">💾 Guardar</button>
+          <button class="btn btn-secondary" id="btnLimpar" type="button">Limpar</button>
+          <button class="btn btn-secondary" id="btnExportarBase" type="button">⬇ JSON</button>
+        </div>
+      </form>
+
+      <p id="msgCrud" class="msg"></p>
+      <hr class="sep" />
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Nome</th><th>Estado</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbSocios"></tbody>
+        </table>
+      </div>
     </section>
 
-    <section class="panel grid">
-      <article>
-        <h2>1) Registar / Editar Sócio</h2>
+    <!-- RIGHT: Card -->
+    <section class="panel">
+      <div class="panel-title">Emitir Cartão</div>
 
-        <form id="formSocio">
-          <div class="field"><label for="fId">ID do Sócio</label><input id="fId" required /></div>
-          <div class="field"><label for="fNumero">Número</label><input id="fNumero" required /></div>
-          <div class="field"><label for="fNome">Nome</label><input id="fNome" required /></div>
-          <div class="field"><label for="fEstado">Estado</label><select id="fEstado"><option value="ativo">ativo</option><option value="inativo">inativo</option></select></div>
-          <div class="field"><label for="fValidade">Validade</label><input id="fValidade" type="date" /></div>
-          <div class="field"><label for="fFoto">Foto do sócio / imagem do cartão</label><input id="fFoto" type="file" accept="image/*" /></div>
+      <div class="field">
+        <label for="emitId">ID ou Número do Sócio</label>
+        <input id="emitId" type="text" placeholder="ex: 001 ou 12345" />
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" id="btnEmitir" type="button">🔍 Gerar QR</button>
+        <button class="btn btn-accent" id="btnValidar" type="button">✅ Validar</button>
+        <button class="btn btn-secondary" id="btnPng" type="button">⬇ PNG</button>
+        <button class="btn btn-secondary" id="btnPdf" type="button">⬇ PDF</button>
+      </div>
+      <p id="msgEmit" class="msg"></p>
 
-          <div class="row">
-            <button class="btn primary" id="btnGuardar" type="submit">Guardar / Atualizar</button>
-            <button class="btn secondary" id="btnLimpar" type="button">Limpar</button>
-            <button class="btn secondary" id="btnExportarBase" type="button">Exportar JSON</button>
+      <hr class="sep" />
+      <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px;">Personalizar Cartão</div>
+
+      <div class="custom-grid">
+        <div class="field">
+          <label for="cTitulo">Título</label>
+          <input id="cTitulo" type="text" placeholder="CCD" />
+        </div>
+        <div class="field">
+          <label for="cSubtitulo">Subtítulo</label>
+          <input id="cSubtitulo" type="text" placeholder="Cartão de Sócio" />
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+        <div class="field">
+          <label>Fundo</label>
+          <div class="color-row">
+            <input id="cCorFundo" type="color" value="#1a1e29" />
+            <input id="cCorFundoHex" type="text" placeholder="#1a1e29" style="flex:1" />
           </div>
-        </form>
-
-        <p id="msgCrud" class="msg"></p>
-
-        <div class="card table-wrap">
-          <table>
-            <thead><tr><th>ID</th><th>Nome</th><th>Estado</th><th>Ações</th></tr></thead>
-            <tbody id="tbSocios"></tbody>
-          </table>
         </div>
-      </article>
-
-      <article>
-        <h2>2) Emitir / Validar Cartão</h2>
-        <div class="field"><label for="emitId">ID ou Número</label><input id="emitId" placeholder="12345" /></div>
-        <div class="row">
-          <button class="btn primary" id="btnEmitir" type="button">Gerar QR</button>
-          <button class="btn secondary" id="btnCopiar" type="button">Copiar Link</button>
-          <button class="btn secondary" id="btnPng" type="button">Exportar PNG</button>
-          <button class="btn secondary" id="btnPdf" type="button">Exportar PDF</button>
-        </div>
-        <p id="msgEmit" class="msg"></p>
-
-        <div class="card" style="margin-bottom:10px">
-          <h3>Personalização do Cartão</h3>
-          <div class="custom-grid">
-            <div class="field"><label for="cTitulo">Título</label><input id="cTitulo" placeholder="Cartão de Sócio CCD" /></div>
-            <div class="field"><label for="cSubtitulo">Subtítulo</label><input id="cSubtitulo" placeholder="Válido para descontos" /></div>
-            <div class="field"><label for="cCorFundo">Cor de Fundo</label><input id="cCorFundo" type="color" value="#f8fbff" /></div>
-            <div class="field"><label for="cCorTexto">Cor de Texto</label><input id="cCorTexto" type="color" value="#1f2937" /></div>
+        <div class="field">
+          <label>Texto</label>
+          <div class="color-row">
+            <input id="cCorTexto" type="color" value="#eef2ff" />
+            <input id="cCorTextoHex" type="text" placeholder="#eef2ff" style="flex:1" />
           </div>
-          <div class="field"><label for="cLogo">Logo do CCD (opcional)</label><input id="cLogo" type="file" accept="image/*" /></div>
-          <button class="btn secondary" id="btnAplicarEstilo" type="button">Aplicar Personalização</button>
         </div>
+      </div>
 
-        <div class="card" id="cartaoExportavel">
-          <p id="cardTitulo" style="font-weight:800;margin:0 0 4px">Cartão de Sócio CCD</p>
-          <p id="cardSubtitulo" style="margin:0 0 8px;color:#6b7280">Válido para descontos</p>
-          <div class="cartao-top">
-            <img id="cardLogo" class="foto-preview" alt="Logo do CCD" src="" />
-            <img id="cardFoto" class="foto-preview" alt="Foto do sócio" src="" />
-            <div>
-              <h3 id="ttl">Aguardando validação...</h3>
-              <span id="badge" class="status na">SEM DADOS</span>
+      <div class="field">
+        <label>Logo do Clube</label>
+        <label class="file-btn-label" for="cLogo">🏆 Escolher logo...
+          <img id="prevLogo" class="foto-preview-small" src="" style="display:none" />
+        </label>
+        <input id="cLogo" type="file" accept="image/*" />
+      </div>
+
+      <!-- Second image for card -->
+      <div class="field">
+        <label>Imagem Extra no Cartão (opcional)</label>
+        <label class="file-btn-label" for="cImgExtra">🖼 Imagem extra...
+          <img id="prevImgExtra" class="foto-preview-small" src="" style="display:none" />
+        </label>
+        <input id="cImgExtra" type="file" accept="image/*" />
+      </div>
+
+      <button class="btn btn-accent" id="btnAplicarEstilo" type="button" style="width:100%; margin-top:4px;">✨ Aplicar Personalização</button>
+
+      <!-- Card preview -->
+      <div id="cartaoExportavel">
+        <div class="card-inner">
+          <div class="card-header">
+            <div class="card-header-text">
+              <span id="cardTitulo">CCD</span>
+              <span id="cardSubtitulo">Cartão de Sócio</span>
+            </div>
+            <img id="cardLogo" src="" alt="Logo" />
+          </div>
+
+          <div class="card-body">
+            <img id="cardFoto" src="" alt="Foto" />
+            <div class="card-info">
+              <div class="card-name" id="vNome">— Aguardando —</div>
+              <div class="card-meta">
+                <span id="vNumero">Nº —</span>
+                <span id="vValidade">Válido até —</span>
+              </div>
+              <img id="cardImgExtra" src="" alt="Extra" style="display:none; width:42px; height:42px; border-radius:8px; object-fit:cover; border:2px solid rgba(255,255,255,.2); margin-top:6px;" />
             </div>
           </div>
-          <p><strong>Nome:</strong> <span id="vNome">—</span></p>
-          <p><strong>Número:</strong> <span id="vNumero">—</span></p>
-          <p><strong>Estado:</strong> <span id="vEstado">—</span></p>
-          <p><strong>Validade:</strong> <span id="vValidade">—</span></p>
-          <canvas id="qr"></canvas>
-          <p><a id="lnk" href="#">—</a></p>
+
+          <div class="card-footer">
+            <div class="card-qr-wrap">
+              <canvas id="qr"></canvas>
+            </div>
+            <span id="badge" class="card-status-badge na">SEM DADOS</span>
+          </div>
         </div>
-      </article>
+      </div>
     </section>
-  </main>
+  </div>
+</div>
 
-  <script>
-    const el = (id) => document.getElementById(id);
-    const STORAGE_KEY = 'ccd_socios';
-    let socios = [];
-    let fotoBase64Atual = '';
-    let logoBase64 = '';
+<script>
+  const el = id => document.getElementById(id);
+  const STORAGE_KEY = 'ccd_socios_v2';
+  let socios = [];
+  let fotoBase64Atual = '';
+  let logoBase64 = '';
+  let imgExtraBase64 = '';
 
-    function setMsg(id, text, ok) { const m = el(id); m.className = `msg ${ok ? 'ok' : 'err'}`; m.textContent = text; }
-    function formatarData(iso) { return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('pt-PT') : '—'; }
-    function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(socios)); }
+  /* ── Utilities ── */
+  function setMsg(id, text, ok) {
+    const m = el(id);
+    m.className = `msg ${ok ? 'msg-ok' : 'msg-err'}`;
+    m.textContent = text;
+  }
+  function formatarData(iso) {
+    return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('pt-PT') : '—';
+  }
+  function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(socios)); }
 
-    function limparForm() {
-      el('formSocio').reset();
-      el('fEstado').value = 'ativo';
-      fotoBase64Atual = '';
-      setMsg('msgCrud', 'Formulário limpo.', true);
-    }
-
-    function lerImagemComoBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function statusInfo(s) {
-      if (!s) return { t: 'NÃO ENCONTRADO', c: 'na', ttl: 'Sócio não encontrado' };
-      const exp = s.validade && new Date(`${s.validade}T23:59:59`) < new Date();
-      if (s.estado !== 'ativo') return { t: 'INATIVO', c: 'inativo', ttl: 'Sócio inativo' };
-      if (exp) return { t: 'EXPIRADO', c: 'expirado', ttl: 'Validade expirada' };
-      return { t: 'ATIVO', c: 'ativo', ttl: '✅ Sócio ativo' };
-    }
-
-    function renderTabela() {
-      const tb = el('tbSocios');
-      tb.innerHTML = '';
-      socios.forEach((s) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${s.id}</td><td>${s.nome}</td><td>${s.estado}</td><td></td>`;
-        const tdActions = tr.lastElementChild;
-
-        const btnEd = document.createElement('button');
-        btnEd.type = 'button';
-        btnEd.className = 'btn secondary';
-        btnEd.textContent = 'Editar';
-        btnEd.onclick = () => {
-          el('fId').value = s.id;
-          el('fNumero').value = s.numero;
-          el('fNome').value = s.nome;
-          el('fEstado').value = s.estado;
-          el('fValidade').value = s.validade || '';
-          fotoBase64Atual = s.foto || '';
-          setMsg('msgCrud', `A editar sócio ${s.id}.`, true);
-        };
-
-        const btnRm = document.createElement('button');
-        btnRm.type = 'button';
-        btnRm.className = 'btn danger';
-        btnRm.textContent = 'Apagar';
-        btnRm.style.marginLeft = '6px';
-        btnRm.onclick = () => {
-          socios = socios.filter((x) => String(x.id) !== String(s.id));
-          persist();
-          renderTabela();
-          setMsg('msgCrud', 'Sócio removido.', true);
-        };
-
-        tdActions.append(btnEd, btnRm);
-        tb.appendChild(tr);
-      });
-    }
-
-    function procurar(chave) {
-      return socios.find((s) => String(s.id) === String(chave) || String(s.numero) === String(chave)) || null;
-    }
-
-    function atualizarCartao(s) {
-      const st = statusInfo(s);
-      el('ttl').textContent = st.ttl;
-      el('badge').className = `status ${st.c}`;
-      el('badge').textContent = st.t;
-      el('vNome').textContent = s?.nome || '—';
-      el('vNumero').textContent = s?.numero || '—';
-      el('vEstado').textContent = s?.estado || '—';
-      el('vValidade').textContent = formatarData(s?.validade);
-      el('cardFoto').src = s?.foto || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNDgiIHk9IjUyIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmI3MjgwIj5TRU0gRk9UTzwvdGV4dD48L3N2Zz4=';
-      if (!el('cardLogo').src) {
-        el('cardLogo').src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjZWRmMmZiIi8+PHRleHQgeD0iNDgiIHk9IjUyIiBmb250LXNpemU9IjEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNmI3MjgwIj5MT0dPPC90ZXh0Pjwvc3ZnPg==';
-      }
-    }
-
-    async function aplicarPersonalizacao() {
-      const titulo = el('cTitulo').value.trim() || 'Cartão de Sócio CCD';
-      const subtitulo = el('cSubtitulo').value.trim() || 'Válido para descontos';
-      const corFundo = el('cCorFundo').value || '#f8fbff';
-      const corTexto = el('cCorTexto').value || '#1f2937';
-      const logoFile = el('cLogo').files?.[0];
-
-      if (logoFile) logoBase64 = await lerImagemComoBase64(logoFile);
-
-      el('cardTitulo').textContent = titulo;
-      el('cardSubtitulo').textContent = subtitulo;
-      el('cartaoExportavel').style.background = corFundo;
-      el('cartaoExportavel').style.color = corTexto;
-      if (logoBase64) el('cardLogo').src = logoBase64;
-      localStorage.setItem('ccd_card_custom', JSON.stringify({ titulo, subtitulo, corFundo, corTexto, logoBase64 }));
-      setMsg('msgEmit', 'Personalização aplicada.', true);
-    }
-
-    function linkValidacao(id) {
-      const u = new URL(window.location.href);
-      u.searchParams.set('id', id);
-      return u.toString();
-    }
-
-    async function emitir(idNumero) {
-      if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
-      const s = procurar(idNumero);
-      if (!s) { atualizarCartao(null); return setMsg('msgEmit', 'Sócio não encontrado.', false); }
-      const link = linkValidacao(idNumero);
-      await QRCode.toCanvas(el('qr'), link, { width: 180, margin: 1 });
-      el('lnk').href = link;
-      el('lnk').textContent = link;
-      atualizarCartao(s);
-      setMsg('msgEmit', 'QR gerado com sucesso.', true);
-    }
-
-    async function guardarSocio(e) {
-      e.preventDefault();
-
-      const id = el('fId').value.trim();
-      const numero = el('fNumero').value.trim();
-      const nome = el('fNome').value.trim();
-      const estado = el('fEstado').value;
-      const validade = el('fValidade').value;
-      const file = el('fFoto').files?.[0];
-
-      if (!id || !numero || !nome) return setMsg('msgCrud', 'Preencha ID, Número e Nome.', false);
-
-      let foto = fotoBase64Atual || '';
-      if (file) {
-        foto = await lerImagemComoBase64(file);
-      }
-
-      const novo = { id, numero, nome, estado, validade, foto };
-      const idx = socios.findIndex((s) => String(s.id) === String(id));
-      if (idx >= 0) socios[idx] = novo;
-      else socios.push(novo);
-
-      fotoBase64Atual = foto;
-      persist();
-      renderTabela();
-      setMsg('msgCrud', 'Sócio guardado com sucesso.', true);
-    }
-
-    async function exportarPNG() {
-      const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: '#fff' });
-      const a = document.createElement('a');
-      a.href = c.toDataURL('image/png');
-      a.download = 'cartao-socio.png';
-      a.click();
-      setMsg('msgEmit', 'PNG exportado.', true);
-    }
-
-    async function exportarPDF() {
-      const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: '#fff' });
-      const img = c.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-      const w = 180;
-      const h = (c.height * w) / c.width;
-      pdf.addImage(img, 'PNG', 15, 20, w, h);
-      pdf.save('cartao-socio.pdf');
-      setMsg('msgEmit', 'PDF exportado.', true);
-    }
-
-    function exportarBase() {
-      const b = new Blob([JSON.stringify(socios, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(b);
-      a.download = 'socios.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      setMsg('msgCrud', 'Base exportada.', true);
-    }
-
-    async function init() {
-      const local = localStorage.getItem(STORAGE_KEY);
-      if (local) socios = JSON.parse(local);
-      else {
-        const r = await fetch('./socios.json');
-        if (!r.ok) throw new Error('Falha ao carregar socios.json');
-        const data = await r.json();
-        socios = Array.isArray(data) ? data : [data];
-        persist();
-      }
-
-      renderTabela();
-      atualizarCartao(null);
-      const cardCustom = localStorage.getItem('ccd_card_custom');
-      if (cardCustom) {
-        const c = JSON.parse(cardCustom);
-        el('cTitulo').value = c.titulo || '';
-        el('cSubtitulo').value = c.subtitulo || '';
-        el('cCorFundo').value = c.corFundo || '#f8fbff';
-        el('cCorTexto').value = c.corTexto || '#1f2937';
-        logoBase64 = c.logoBase64 || '';
-        await aplicarPersonalizacao();
-      }
-
-      const idUrl = new URLSearchParams(window.location.search).get('id');
-      if (idUrl) {
-        el('emitId').value = idUrl;
-        await emitir(idUrl);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      el('formSocio').addEventListener('submit', guardarSocio);
-      el('btnLimpar').addEventListener('click', limparForm);
-      el('btnExportarBase').addEventListener('click', exportarBase);
-      el('btnEmitir').addEventListener('click', () => emitir(el('emitId').value.trim()));
-      el('btnCopiar').addEventListener('click', async () => {
-        const t = el('lnk').textContent;
-        if (!t || t === '—') return setMsg('msgEmit', 'Gere primeiro o QR.', false);
-        try { await navigator.clipboard.writeText(t); setMsg('msgEmit', 'Link copiado.', true); }
-        catch { setMsg('msgEmit', 'Falha ao copiar link.', false); }
-      });
-      el('btnPng').addEventListener('click', exportarPNG);
-      el('btnPdf').addEventListener('click', exportarPDF);
-      el('btnAplicarEstilo').addEventListener('click', () => {
-        aplicarPersonalizacao().catch(() => setMsg('msgEmit', 'Falha ao aplicar personalização.', false));
-      });
-
-      init().catch((err) => setMsg('msgEmit', err.message, false));
+  function lerImagem(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
     });
-  </script>
+  }
+
+  function statusInfo(s) {
+    if (!s) return { t: 'SEM DADOS', c: 'na', ttl: 'Sócio não encontrado', overlay: 'red', icon: '❌' };
+    const exp = s.validade && new Date(`${s.validade}T23:59:59`) < new Date();
+    if (s.estado !== 'ativo') return { t: 'INATIVO', c: 'inativo', ttl: 'Sócio inativo', overlay: 'red', icon: '🚫' };
+    if (exp) return { t: 'EXPIRADO', c: 'expirado', ttl: 'Validade expirada', overlay: 'red', icon: '⚠️' };
+    return { t: 'ATIVO', c: 'ativo', ttl: 'Sócio ativo', overlay: 'green', icon: '✅' };
+  }
+
+  const PLACEHOLDER_FOTO = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3OCIgaGVpZ2h0PSI3OCI+PHJlY3Qgd2lkdGg9Ijc4IiBoZWlnaHQ9Ijc4IiByeD0iMTIiIGZpbGw9IiMyMjI2MzIiLz48dGV4dCB4PSIzOSIgeT0iNDUiIGZvbnQtc2l6ZT0iMjgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YTUwNjgiPjwvdGV4dD48L3N2Zz4=';
+  const PLACEHOLDER_LOGO = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MiIgaGVpZ2h0PSI1MiI+PHJlY3Qgd2lkdGg9IjUyIiBoZWlnaHQ9IjUyIiByeD0iMTAiIGZpbGw9IiMyMjI2MzIiLz48dGV4dCB4PSIyNiIgeT0iMzIiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM0YTUwNjgiPjwvdGV4dD48L3N2Zz4=';
+
+  /* ── Render table ── */
+  function renderTabela() {
+    const tb = el('tbSocios');
+    tb.innerHTML = '';
+    socios.forEach(s => {
+      const st = statusInfo(s);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${s.id}</td><td>${s.nome}</td><td><span class="badge badge-${st.c}">${st.t}</span></td><td></td>`;
+      const td = tr.lastElementChild;
+
+      const btnEd = document.createElement('button');
+      btnEd.type = 'button'; btnEd.className = 'btn btn-secondary btn-sm'; btnEd.textContent = '✏️';
+      btnEd.onclick = () => {
+        el('fId').value = s.id;
+        el('fNumero').value = s.numero;
+        el('fNome').value = s.nome;
+        el('fEstado').value = s.estado;
+        el('fValidade').value = s.validade || '';
+        fotoBase64Atual = s.foto || '';
+        if (fotoBase64Atual) { el('prevFoto').src = fotoBase64Atual; el('prevFoto').style.display = 'inline-block'; }
+        setMsg('msgCrud', `A editar: ${s.nome}`, true);
+      };
+
+      const btnRm = document.createElement('button');
+      btnRm.type = 'button'; btnRm.className = 'btn btn-danger btn-sm'; btnRm.textContent = '🗑';
+      btnRm.style.marginLeft = '4px';
+      btnRm.onclick = () => {
+        if (!confirm(`Apagar "${s.nome}"?`)) return;
+        socios = socios.filter(x => String(x.id) !== String(s.id));
+        persist(); renderTabela();
+        setMsg('msgCrud', 'Sócio removido.', true);
+      };
+
+      td.append(btnEd, btnRm);
+      tb.appendChild(tr);
+    });
+  }
+
+  function procurar(chave) {
+    return socios.find(s => String(s.id) === String(chave) || String(s.numero) === String(chave)) || null;
+  }
+
+  /* ── Update card display ── */
+  function atualizarCartao(s) {
+    const st = statusInfo(s);
+    el('badge').className = `card-status-badge ${st.c}`;
+    el('badge').textContent = st.t;
+    el('vNome').textContent = s?.nome || '— Aguardando —';
+    el('vNumero').textContent = s ? `Nº ${s.numero}` : 'Nº —';
+    el('vValidade').textContent = s?.validade ? `Válido até ${formatarData(s.validade)}` : '';
+    el('cardFoto').src = s?.foto || PLACEHOLDER_FOTO;
+    if (!el('cardLogo').src || el('cardLogo').src === window.location.href) {
+      el('cardLogo').src = logoBase64 || PLACEHOLDER_LOGO;
+    }
+    if (imgExtraBase64) {
+      el('cardImgExtra').src = imgExtraBase64;
+      el('cardImgExtra').style.display = 'block';
+    }
+  }
+
+  /* ── Generate QR ── */
+  async function emitir(idNumero) {
+    if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
+    const s = procurar(idNumero);
+    if (!s) { atualizarCartao(null); return setMsg('msgEmit', 'Sócio não encontrado.', false); }
+
+    // QR encodes just the member number (no URL link shown on card)
+    const qrData = `SOCIO:${s.id}:${s.numero}`;
+    await QRCode.toCanvas(el('qr'), qrData, { width: 90, margin: 1, color: { dark: '#000', light: '#fff' } });
+
+    atualizarCartao(s);
+    setMsg('msgEmit', `Cartão de ${s.nome} gerado.`, true);
+  }
+
+  /* ── Validate (overlay) ── */
+  function validar(idNumero) {
+    if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
+    const s = procurar(idNumero);
+    const st = statusInfo(s);
+
+    el('overlayBg').className = st.overlay;
+    el('overlayIcon').textContent = st.icon;
+    el('overlayTitle').textContent = st.t;
+    el('overlayName').textContent = s?.nome || '—';
+    el('overlaySub').textContent = s ? `Nº ${s.numero} · ${formatarData(s.validade)}` : 'Sócio não encontrado';
+
+    el('validationOverlay').classList.add('show');
+  }
+
+  el('overlayCloseBtn').addEventListener('click', () => {
+    el('validationOverlay').classList.remove('show');
+  });
+  el('validationOverlay').addEventListener('click', e => {
+    if (e.target === el('validationOverlay') || e.target === el('overlayBg')) {
+      el('validationOverlay').classList.remove('show');
+    }
+  });
+
+  /* ── Save member ── */
+  async function guardarSocio(e) {
+    e.preventDefault();
+    const id = el('fId').value.trim();
+    const numero = el('fNumero').value.trim();
+    const nome = el('fNome').value.trim();
+    const estado = el('fEstado').value;
+    const validade = el('fValidade').value;
+    const file = el('fFoto').files?.[0];
+
+    if (!id || !numero || !nome) return setMsg('msgCrud', 'Preencha ID, Número e Nome.', false);
+
+    let foto = fotoBase64Atual || '';
+    if (file) foto = await lerImagem(file);
+
+    const novo = { id, numero, nome, estado, validade, foto };
+    const idx = socios.findIndex(s => String(s.id) === String(id));
+    if (idx >= 0) socios[idx] = novo; else socios.push(novo);
+
+    fotoBase64Atual = foto;
+    persist(); renderTabela();
+    setMsg('msgCrud', `✓ Sócio "${nome}" guardado.`, true);
+  }
+
+  /* ── Customize card ── */
+  async function aplicarPersonalizacao() {
+    const titulo = el('cTitulo').value.trim() || 'CCD';
+    const subtitulo = el('cSubtitulo').value.trim() || 'Cartão de Sócio';
+    const corFundo = el('cCorFundo').value || '#1a1e29';
+    const corTexto = el('cCorTexto').value || '#eef2ff';
+    const logoFile = el('cLogo').files?.[0];
+    const extraFile = el('cImgExtra').files?.[0];
+
+    if (logoFile) {
+      logoBase64 = await lerImagem(logoFile);
+      el('cardLogo').src = logoBase64;
+      el('prevLogo').src = logoBase64; el('prevLogo').style.display = 'inline-block';
+    }
+    if (extraFile) {
+      imgExtraBase64 = await lerImagem(extraFile);
+      el('cardImgExtra').src = imgExtraBase64; el('cardImgExtra').style.display = 'block';
+      el('prevImgExtra').src = imgExtraBase64; el('prevImgExtra').style.display = 'inline-block';
+    }
+
+    el('cardTitulo').textContent = titulo;
+    el('cardSubtitulo').textContent = subtitulo;
+    el('cartaoExportavel').style.background = corFundo;
+    el('cartaoExportavel').style.color = corTexto;
+
+    localStorage.setItem('ccd_card_custom', JSON.stringify({ titulo, subtitulo, corFundo, corTexto, logoBase64, imgExtraBase64 }));
+    setMsg('msgEmit', '✓ Personalização aplicada.', true);
+  }
+
+  /* ── Color sync ── */
+  el('cCorFundo').addEventListener('input', () => { el('cCorFundoHex').value = el('cCorFundo').value; });
+  el('cCorFundoHex').addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(el('cCorFundoHex').value)) el('cCorFundo').value = el('cCorFundoHex').value;
+  });
+  el('cCorTexto').addEventListener('input', () => { el('cCorTextoHex').value = el('cCorTexto').value; });
+  el('cCorTextoHex').addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(el('cCorTextoHex').value)) el('cCorTexto').value = el('cCorTextoHex').value;
+  });
+
+  /* ── Photo preview ── */
+  el('fFoto').addEventListener('change', async () => {
+    const f = el('fFoto').files?.[0];
+    if (!f) return;
+    const b64 = await lerImagem(f);
+    el('prevFoto').src = b64; el('prevFoto').style.display = 'inline-block';
+    fotoBase64Atual = b64;
+  });
+
+  /* ── Export ── */
+  async function exportarPNG() {
+    const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: el('cCorFundo').value || '#1a1e29', scale: 2, useCORS: true });
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png'); a.download = 'cartao-socio.png'; a.click();
+    setMsg('msgEmit', '✓ PNG exportado.', true);
+  }
+
+  async function exportarPDF() {
+    const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: el('cCorFundo').value || '#1a1e29', scale: 2, useCORS: true });
+    const img = c.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    const w = 180; const h = (c.height * w) / c.width;
+    pdf.addImage(img, 'PNG', 15, 20, w, h);
+    pdf.save('cartao-socio.pdf');
+    setMsg('msgEmit', '✓ PDF exportado.', true);
+  }
+
+  function exportarBase() {
+    const b = new Blob([JSON.stringify(socios, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = 'socios.json'; a.click();
+    URL.revokeObjectURL(a.href);
+    setMsg('msgCrud', '✓ Base exportada.', true);
+  }
+
+  /* ── Limpar ── */
+  function limparForm() {
+    el('formSocio').reset();
+    el('fEstado').value = 'ativo';
+    fotoBase64Atual = '';
+    el('prevFoto').src = ''; el('prevFoto').style.display = 'none';
+    setMsg('msgCrud', 'Formulário limpo.', true);
+  }
+
+  /* ── Init ── */
+  async function init() {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) socios = JSON.parse(local);
+    renderTabela();
+    atualizarCartao(null);
+
+    const cardCustom = localStorage.getItem('ccd_card_custom');
+    if (cardCustom) {
+      const c = JSON.parse(cardCustom);
+      el('cTitulo').value = c.titulo || ''; el('cSubtitulo').value = c.subtitulo || '';
+      el('cCorFundo').value = c.corFundo || '#1a1e29'; el('cCorFundoHex').value = c.corFundo || '#1a1e29';
+      el('cCorTexto').value = c.corTexto || '#eef2ff'; el('cCorTextoHex').value = c.corTexto || '#eef2ff';
+      logoBase64 = c.logoBase64 || ''; imgExtraBase64 = c.imgExtraBase64 || '';
+      el('cardTitulo').textContent = c.titulo || 'CCD';
+      el('cardSubtitulo').textContent = c.subtitulo || 'Cartão de Sócio';
+      el('cartaoExportavel').style.background = c.corFundo || '#1a1e29';
+      el('cartaoExportavel').style.color = c.corTexto || '#eef2ff';
+      if (logoBase64) { el('cardLogo').src = logoBase64; el('prevLogo').src = logoBase64; el('prevLogo').style.display = 'inline-block'; }
+      if (imgExtraBase64) { el('cardImgExtra').src = imgExtraBase64; el('cardImgExtra').style.display = 'block'; el('prevImgExtra').src = imgExtraBase64; el('prevImgExtra').style.display = 'inline-block'; }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    el('formSocio').addEventListener('submit', guardarSocio);
+    el('btnLimpar').addEventListener('click', limparForm);
+    el('btnExportarBase').addEventListener('click', exportarBase);
+    el('btnEmitir').addEventListener('click', () => emitir(el('emitId').value.trim()));
+    el('btnValidar').addEventListener('click', () => validar(el('emitId').value.trim()));
+    el('btnPng').addEventListener('click', exportarPNG);
+    el('btnPdf').addEventListener('click', exportarPDF);
+    el('btnAplicarEstilo').addEventListener('click', () => aplicarPersonalizacao().catch(() => setMsg('msgEmit', 'Falha ao aplicar.', false)));
+
+    init().catch(err => setMsg('msgEmit', err.message, false));
+  });
+</script>
 </body>
 </html>
