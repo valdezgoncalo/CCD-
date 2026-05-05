@@ -590,23 +590,23 @@
     }
   }
 
-  /* ── Generate QR (encodes validation URL) ── */
+  /* ── Generate QR ── */
   async function emitir(idNumero) {
     if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
     const s = procurar(idNumero);
     if (!s) { atualizarCartao(null); return setMsg('msgEmit', 'Sócio não encontrado.', false); }
 
-    // QR encodes a real URL → partner scans → browser opens validation screen
-    const url = new URL(window.location.href.split('?')[0]);
-    url.searchParams.set('validar', s.id);
-    await QRCode.toCanvas(el('qr'), url.toString(), { width: 90, margin: 1, color: { dark: '#000', light: '#fff' } });
+    // QR encodes just the member number (no URL link shown on card)
+    const qrData = `SOCIO:${s.id}:${s.numero}`;
+    await QRCode.toCanvas(el('qr'), qrData, { width: 90, margin: 1, color: { dark: '#000', light: '#fff' } });
 
     atualizarCartao(s);
-    setMsg('msgEmit', `Cartão de ${s.nome} gerado. QR pronto para parceiros.`, true);
+    setMsg('msgEmit', `Cartão de ${s.nome} gerado.`, true);
   }
 
-  /* ── Validate overlay ── */
-  function mostrarOverlay(idNumero) {
+  /* ── Validate (overlay) ── */
+  function validar(idNumero) {
+    if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
     const s = procurar(idNumero);
     const st = statusInfo(s);
 
@@ -614,31 +614,17 @@
     el('overlayIcon').textContent = st.icon;
     el('overlayTitle').textContent = st.t;
     el('overlayName').textContent = s?.nome || '—';
-    el('overlaySub').textContent = s
-      ? `Nº ${s.numero}${s.validade ? ' · Válido até ' + formatarData(s.validade) : ''}`
-      : 'Sócio não encontrado na base de dados';
-    el('validationOverlay').classList.add('show');
-  }
+    el('overlaySub').textContent = s ? `Nº ${s.numero} · ${formatarData(s.validade)}` : 'Sócio não encontrado';
 
-  // Button "Validar" (internal use)
-  function validar(idNumero) {
-    if (!idNumero) return setMsg('msgEmit', 'Indique ID ou Número.', false);
-    mostrarOverlay(idNumero);
+    el('validationOverlay').classList.add('show');
   }
 
   el('overlayCloseBtn').addEventListener('click', () => {
     el('validationOverlay').classList.remove('show');
-    // If opened via QR scan (?validar=), remove the param so page goes back to normal
-    if (new URLSearchParams(window.location.search).has('validar')) {
-      history.replaceState(null, '', window.location.pathname);
-    }
   });
   el('validationOverlay').addEventListener('click', e => {
     if (e.target === el('validationOverlay') || e.target === el('overlayBg')) {
       el('validationOverlay').classList.remove('show');
-      if (new URLSearchParams(window.location.search).has('validar')) {
-        history.replaceState(null, '', window.location.pathname);
-      }
     }
   });
 
@@ -754,29 +740,6 @@
   async function init() {
     const local = localStorage.getItem(STORAGE_KEY);
     if (local) socios = JSON.parse(local);
-
-    // ── Partner QR scan: ?validar=ID ──
-    // Shows full-screen result only — management UI hidden from partners
-    const params = new URLSearchParams(window.location.search);
-    const validarId = params.get('validar');
-    if (validarId) {
-      document.querySelector('.wrap').style.display = 'none';
-      mostrarOverlay(validarId);
-      el('overlayCloseBtn').textContent = '← Voltar';
-      el('overlayCloseBtn').onclick = () => {
-        el('validationOverlay').classList.remove('show');
-        document.body.innerHTML = `
-          <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;
-            background:#0d0f14;font-family:'DM Sans',sans-serif;color:#7a84a0;
-            flex-direction:column;gap:12px;text-align:center;padding:20px;">
-            <div style="font-size:48px">🪪</div>
-            <div style="font-size:18px;font-weight:700;color:#eef2ff;">Validação concluída</div>
-            <div style="font-size:14px;">Pode fechar esta página.</div>
-          </div>`;
-      };
-      return;
-    }
-
     renderTabela();
     atualizarCartao(null);
 
