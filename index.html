@@ -407,6 +407,7 @@
         <button class="btn btn-accent" id="btnValidar" type="button">✅ Validar</button>
         <button class="btn btn-secondary" id="btnPng" type="button">⬇ PNG</button>
         <button class="btn btn-secondary" id="btnPdf" type="button">⬇ PDF</button>
+        <button class="btn btn-accent" id="btnTodosPdf" type="button" style="width:100%;margin-top:6px;">📄 Exportar Todos os Cartões PDF</button>
       </div>
       <p id="msgEmit" class="msg"></p>
 
@@ -537,7 +538,16 @@
   function formatarData(iso) {
     return iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('pt-PT') : '—';
   }
-  function persistLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(socios)); }
+  function persistLocal() {
+    try {
+      // Save without photos to avoid localStorage quota errors (photos stay in Supabase)
+      const semFotos = socios.map(s => { const {foto, ...rest} = s; return rest; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(semFotos));
+    } catch(e) {
+      // If still too big, skip local cache entirely — Supabase is the source of truth
+      console.warn('localStorage cheio, a usar só Supabase.');
+    }
+  }
   async function persist() {
     persistLocal();
     // Supabase sync happens explicitly on save/delete
@@ -602,7 +612,7 @@
       const btnRm = document.createElement('button');
       btnRm.type = 'button'; btnRm.className = 'btn btn-danger btn-sm'; btnRm.textContent = '🗑';
       btnRm.style.marginLeft = '4px';
-      btnRm.onclick = () => {
+      btnRm.onclick = async () => {
         if (!confirm(`Apagar "${s.nome}"?`)) return;
         setMsg('msgCrud', '⏳ A apagar...', true);
         try {
@@ -775,6 +785,55 @@
   });
 
   /* ── Export ── */
+  async function exportarTodosPDF() {
+    if (!socios.length) return setMsg('msgEmit', '❌ Não há sócios para exportar.', false);
+    setMsg('msgEmit', `⏳ A gerar PDF com ${socios.length} cartão(ões)...`, true);
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+    const corFundo = el('cCorFundo').value || '#1a1e29';
+    const corTexto = el('cCorTexto').value || '#eef2ff';
+    const titulo = el('cardTitulo').textContent || 'CCD';
+    const subtitulo = el('cardSubtitulo').textContent || 'Cartão de Sócio';
+
+    for (let i = 0; i < socios.length; i++) {
+      const s = socios[i];
+      if (i > 0) pdf.addPage();
+
+      // Update card with this socio and generate QR
+      atualizarCartao(s);
+      const url = new URL(window.location.href.split('?')[0]);
+      url.searchParams.set('validar', s.id);
+      await QRCode.toCanvas(el('qr'), url.toString(), { width: 90, margin: 1, color: { dark: '#000', light: '#fff' } });
+
+      // Wait for images to settle
+      await new Promise(r => setTimeout(r, 300));
+
+      // Capture card
+      const canvas = await html2canvas(el('cartaoExportavel'), {
+        backgroundColor: corFundo, scale: 2, useCORS: true, allowTaint: true
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      // A4 landscape: 297 x 210mm — centre the card
+      const cardW = 240;
+      const cardH = (canvas.height * cardW) / canvas.width;
+      const x = (297 - cardW) / 2;
+      const y = (210 - cardH) / 2;
+      pdf.addImage(imgData, 'PNG', x, y, cardW, cardH);
+
+      // Page number
+      pdf.setFontSize(9);
+      pdf.setTextColor(150);
+      pdf.text(`${i + 1} / ${socios.length}`, 280, 205);
+
+      setMsg('msgEmit', `⏳ A processar ${i + 1} de ${socios.length}...`, true);
+    }
+
+    pdf.save('todos-os-cartoes.pdf');
+    setMsg('msgEmit', `✓ PDF com ${socios.length} cartão(ões) exportado!`, true);
+  }
+
   async function exportarPNG() {
     const c = await html2canvas(el('cartaoExportavel'), { backgroundColor: el('cCorFundo').value || '#1a1e29', scale: 2, useCORS: true });
     const a = document.createElement('a');
@@ -819,6 +878,21 @@
     const validarId = params.get('validar');
     if (validarId) {
       document.querySelector('.wrap').style.display = 'none';
+      // Show loading while fetching from Supabase
+      document.body.insertAdjacentHTML('afterbegin', `
+        <div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#0d0f14;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+          <div style="font-size:48px">🪪</div>
+          <div style="font-size:16px;font-weight:600;color:#eef2ff;">A verificar sócio...</div>
+          <div style="width:48px;height:4px;background:#252a38;border-radius:4px;overflow:hidden;">
+            <div style="height:100%;background:#4f7cff;border-radius:4px;animation:bar 1.2s ease infinite;"></div>
+          </div>
+          <style>@keyframes bar{0%{width:0%}100%{width:100%}}</style>
+        </div>`);
+      // Load from Supabase FIRST, then show result
+      try { socios = await sbCarregar(); }
+      catch(e) { const l = localStorage.getItem(STORAGE_KEY); if (l) socios = JSON.parse(l); }
+      document.getElementById('loadingScreen')?.remove();
       mostrarOverlay(validarId);
       el('overlayCloseBtn').textContent = '← Voltar';
       el('overlayCloseBtn').onclick = () => {
@@ -875,6 +949,7 @@
     el('btnValidar').addEventListener('click', () => validar(el('emitId').value.trim()));
     el('btnPng').addEventListener('click', exportarPNG);
     el('btnPdf').addEventListener('click', exportarPDF);
+    el('btnTodosPdf').addEventListener('click', () => exportarTodosPDF().catch(e => setMsg('msgEmit', `❌ ${e.message}`, false)));
     el('btnAplicarEstilo').addEventListener('click', () => aplicarPersonalizacao().catch(() => setMsg('msgEmit', 'Falha ao aplicar.', false)));
 
     init().catch(err => setMsg('msgEmit', err.message, false));
